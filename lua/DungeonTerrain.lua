@@ -14,23 +14,23 @@ local function randomize_terrain(base, variations)
 end
 
 if wml.variables['dungeon_creation.temp.terrain_variation'] == "Rd" then
-	randomize_terrain("Re,Aa", "Rd^Wel,Rd^Dr,Rd^Dr,Rd^Dr,Rd^Dr,Rd^Dr,Rd^Dr,Rd^Dr,Rd^Dr,Rd^Dr,Rd^Dr,Rd^Dr,Rd^Dr,Rd^Dr,Uh,Uh,Uh,Uh,Uh,Uh,Uu,Uu,Uu,Uu,Uu,Uu,Uu^Uf,Uu^Uf,Uu^Uf,Uu^Uf,Uu^Uf,Uu^Uf")
+	randomize_terrain("Re,Aa", "Rd^Wel,Rd^Dr,Rd^Dr,Rd^Dr,Rd^Dr,Rd^Dr,Rd^Dr,Rd^Dr,Rd^Dr,Rd^Dr,Rd^Dr,Rd^Dr,Rd^Dr,Rd^Dr,Uh,Uh,Uh,Uh,Uh,Uh,Uu,Uu,Uu,Uu,Uu,Uu,Uu^Tf,Uu^Tf,Uu^Tf,Uu^Tf,Uu^Tf,Uu^Tf")
 elseif wml.variables['dungeon_creation.temp.terrain_variation'] == "Re" then
-	randomize_terrain("Re,Aa", "Re^Wel,Re^Dr,Re^Dr,Re^Dr,Re^Dr,Re^Dr,Re^Dr,Re^Dr,Re^Dr,Re^Dr,Re^Dr,Uh,Uh,Uh,Uh,Uh,Uu,Uu,Uu,Uu,Uu,Uu^Uf,Uu^Uf,Uu^Uf,Uu^Uf,Uu^Uf")
+	randomize_terrain("Re,Aa", "Re^Wel,Re^Dr,Re^Dr,Re^Dr,Re^Dr,Re^Dr,Re^Dr,Re^Dr,Re^Dr,Re^Dr,Re^Dr,Uh,Uh,Uh,Uh,Uh,Uu,Uu,Uu,Uu,Uu,Uu^Tf,Uu^Tf,Uu^Tf,Uu^Tf,Uu^Tf")
 elseif wml.variables['dungeon_creation.temp.terrain_variation'] == "Ryc" then
-	randomize_terrain("Re,Aa", "Ryc^Wel,Ryc^Dr,Ryc^Dr,Ryc^Dr,Ryc^Dr,Ryc^Dr,Ryc^Dr,Ryc^Dr,Ryc^Dr,Ryc^Dr,Ryc^Dr,Uh,Uh,Uh,Uh,Uh,Uu,Uu,Uu,Uu,Uu,Uu^Uf,Uu^Uf,Uu^Uf,Uu^Uf,Uu^Uf,Ryc^Dr,Ryc^Dr,Ryc^Dr,Ryc^Dr,Ryc^Dr,Ryc^Dr,Ryc^Dr,Ryc^Dr,Ryc^Dr,Ryc^Dr,Uh,Uh,Uh,Uh,Uh,Uu,Uu,Uu,Uu,Uu,Uu^Uf,Uu^Uf,Uu^Uf,Uu^Uf,Uu^Uf")
+	randomize_terrain("Re,Aa", "Ryc^Wel,Ryc^Dr,Ryc^Dr,Ryc^Dr,Ryc^Dr,Ryc^Dr,Ryc^Dr,Ryc^Dr,Ryc^Dr,Ryc^Dr,Ryc^Dr,Uh,Uh,Uh,Uh,Uh,Uu,Uu,Uu,Uu,Uu,Uu^Tf,Uu^Tf,Uu^Tf,Uu^Tf,Uu^Tf,Ryc^Dr,Ryc^Dr,Ryc^Dr,Ryc^Dr,Ryc^Dr,Ryc^Dr,Ryc^Dr,Ryc^Dr,Ryc^Dr,Ryc^Dr,Uh,Uh,Uh,Uh,Uh,Uu,Uu,Uu,Uu,Uu,Uu^Tf,Uu^Tf,Uu^Tf,Uu^Tf,Uu^Tf")
 elseif wml.variables['dungeon_creation.temp.terrain_variation'] == "Ur" then
-	randomize_terrain("Re,Aa", "Ur^Wel,Uu^Uf,Uu^Uf,Uu^Uf,Uu^Uf,Uu^Uf,Uu,Uu,Uh,Uu,Uu,Uu,Uh,Uu,Uu,Uu,Uh,Uu,Uu,Uu,Uh,Uu,Uu,Uu,Uh,Uu,Uu,Uu,Uh,Uu,Uh,Uh,Rd,Rd,Rd,Rd,Rd,Rd,Rd,Rd,Rd,Rd,Rd,Rd,Rd,Rd,Rd,Ur^Dr,Ur^Dr,Ur^Dr,Ur^Dr,Ur^Dr,Ur^Dr,Ur^Dr,Ur^Dr,Ur^Dr,Ur^Dr,Uu^Uf,Uu^Uf,Uu^Uf,Uu^Uf,Uu^Uf,Uu^Uf,Uu^Uf,Uu^Uf,Uu^Uf,Uu^Uf,Uu,Uu,Uh,Uu,Uu,Uu,Uh,Uu,Uu,Uu,Uh,Uu,Uu,Uu,Uh,Uu,Uu,Uu,Uh,Uu,Uu,Uu,Uh,Uu,Uh,Uh,Rd,Rd,Rd,Rd,Rd,Rd,Rd,Rd,Rd,Rd,Rd,Rd,Rd,Rd,Rd,Ur^Dr,Ur^Dr,Ur^Dr,Ur^Dr,Ur^Dr,Ur^Dr,Ur^Dr,Ur^Dr,Ur^Dr,Ur^Dr,Uu^Uf,Uu^Uf,Uu^Uf,Uu^Uf,Uu^Uf")
+	randomize_terrain("Re,Aa", "Ur^Wel,Uu^Tf,Uu^Tf,Uu^Tf,Uu^Tf,Uu^Tf,Uu,Uu,Uh,Uu,Uu,Uu,Uh,Uu,Uu,Uu,Uh,Uu,Uu,Uu,Uh,Uu,Uu,Uu,Uh,Uu,Uu,Uu,Uh,Uu,Uh,Uh,Rd,Rd,Rd,Rd,Rd,Rd,Rd,Rd,Rd,Rd,Rd,Rd,Rd,Rd,Rd,Ur^Dr,Ur^Dr,Ur^Dr,Ur^Dr,Ur^Dr,Ur^Dr,Ur^Dr,Ur^Dr,Ur^Dr,Ur^Dr,Uu^Tf,Uu^Tf,Uu^Tf,Uu^Tf,Uu^Tf,Uu^Tf,Uu^Tf,Uu^Tf,Uu^Tf,Uu^Tf,Uu,Uu,Uh,Uu,Uu,Uu,Uh,Uu,Uu,Uu,Uh,Uu,Uu,Uu,Uh,Uu,Uu,Uu,Uh,Uu,Uu,Uu,Uh,Uu,Uh,Uh,Rd,Rd,Rd,Rd,Rd,Rd,Rd,Rd,Rd,Rd,Rd,Rd,Rd,Rd,Rd,Ur^Dr,Ur^Dr,Ur^Dr,Ur^Dr,Ur^Dr,Ur^Dr,Ur^Dr,Ur^Dr,Ur^Dr,Ur^Dr,Uu^Tf,Uu^Tf,Uu^Tf,Uu^Tf,Uu^Tf")
 elseif wml.variables['dungeon_creation.temp.terrain_variation'] == "Wwf" then
-	randomize_terrain("Re,Aa", "Wwf^Wel,Wwf^Wel,Wwr,Wwr,Wwr,Wwr,Wwr,Wwr,Wwr,Wwr,Wwr,Wwr,Wwr,Wwr,Wwr,Wwr,Wwr,Wwr,Wwr,Wwr,Wwr,Wwr,Wwr,Wwr,Wwr,Wwr,Wwr,Wwr,Wwr,Wwr,Wwr,Wwr,Ds,Ds,Ds,Ds,Ds,Ss,Ss,Ss,Ss,Ss,Ss,Ss,Ss,Ss,Ss,Ss,Ss,Ss,Ss,Ss,Wwf^Dr,Wwf^Dr,Wwf^Dr,Wwf^Dr,Wwf^Dr,Wwf^Dr,Wwf^Dr,Wwf^Dr,Wwf^Dr,Wwf^Dr,Uu^Uf,Uu^Uf,Uu^Uf,Uu^Uf,Uu^Uf")
+	randomize_terrain("Re,Aa", "Wwf^Wel,Wwf^Wel,Wwr,Wwr,Wwr,Wwr,Wwr,Wwr,Wwr,Wwr,Wwr,Wwr,Wwr,Wwr,Wwr,Wwr,Wwr,Wwr,Wwr,Wwr,Wwr,Wwr,Wwr,Wwr,Wwr,Wwr,Wwr,Wwr,Wwr,Wwr,Wwr,Wwr,Ds,Ds,Ds,Ds,Ds,Ss,Ss,Ss,Ss,Ss,Ss,Ss,Ss,Ss,Ss,Ss,Ss,Ss,Ss,Ss,Wwf^Dr,Wwf^Dr,Wwf^Dr,Wwf^Dr,Wwf^Dr,Wwf^Dr,Wwf^Dr,Wwf^Dr,Wwf^Dr,Wwf^Dr,Uu^Tf,Uu^Tf,Uu^Tf,Uu^Tf,Uu^Tf")
 elseif wml.variables['dungeon_creation.temp.terrain_variation'] == "Rr" then
-	randomize_terrain("Re,Aa", "Rr^Wel,Rr^Dr,Rr^Dr,Rr^Dr,Rr^Dr,Ur,Rd,Uh,Uu,Uu^Uf,Rr^Dr,Rr^Dr,Rr^Dr,Rr^Dr,Ur,Rd,Uh,Uu,Uu^Uf,Rr^Dr,Rr^Dr,Rr^Dr,Rr^Dr,Ur,Rd,Uh,Uu,Uu^Uf,Rr^Dr,Rr^Dr,Rr^Dr,Rr^Dr,Ur,Rd,Uh,Uu,Uu^Uf,Rr^Dr,Rr^Dr,Rr^Dr,Rr^Dr,Ur,Rd,Uh,Uu,Uu^Uf,Rr^Dr,Rr^Dr,Rr^Dr,Rr^Dr,Ur,Rd,Uh,Uu,Uu^Uf,Rr^Dr,Rr^Dr,Rr^Dr,Rr^Dr,Ur,Rd,Uh,Uu,Uu^Uf")
+	randomize_terrain("Re,Aa", "Rr^Wel,Rr^Dr,Rr^Dr,Rr^Dr,Rr^Dr,Ur,Rd,Uh,Uu,Uu^Tf,Rr^Dr,Rr^Dr,Rr^Dr,Rr^Dr,Ur,Rd,Uh,Uu,Uu^Tf,Rr^Dr,Rr^Dr,Rr^Dr,Rr^Dr,Ur,Rd,Uh,Uu,Uu^Tf,Rr^Dr,Rr^Dr,Rr^Dr,Rr^Dr,Ur,Rd,Uh,Uu,Uu^Tf,Rr^Dr,Rr^Dr,Rr^Dr,Rr^Dr,Ur,Rd,Uh,Uu,Uu^Tf,Rr^Dr,Rr^Dr,Rr^Dr,Rr^Dr,Ur,Rd,Uh,Uu,Uu^Tf,Rr^Dr,Rr^Dr,Rr^Dr,Rr^Dr,Ur,Rd,Uh,Uu,Uu^Tf")
 elseif wml.variables['dungeon_creation.temp.terrain_variation'] == "Ryv" then
-	randomize_terrain("Re,Aa", "Ryv^Wel,Ryv^Dr,Ryv^Dr,Ryv^Dr,Ryv^Dr,Ryv^Dr,Ryv^Dr,Ryv^Dr,Ryv^Dr,Uh,Uu,Uh,Uu,Uh,Uu,Uh,Uu,Uh,Uu,Uu^Uf,Uu^Uf,Uu^Uf,Uu^Uf,Uu^Uf,Uu^Uf,Ryv^Dr,Ryv^Dr,Ryv^Dr,Ryv^Dr,Ryv^Dr,Ryv^Dr,Ryv^Dr,Ryv^Dr,Uh,Uu,Uh,Uu,Uh,Uu,Uh,Uu,Uh,Uu,Uu^Uf,Uu^Uf,Uu^Uf,Uu^Uf,Uu^Uf,Uu^Uf,Ryv^Dr,Ryv^Dr,Ryv^Dr,Ryv^Dr,Ryv^Dr,Ryv^Dr,Ryv^Dr,Ryv^Dr,Uh,Uu,Uh,Uu,Uh,Uu,Uh,Uu,Uh,Uu,Uu^Uf,Uu^Uf,Uu^Uf,Uu^Uf,Uu^Uf,Uu^Uf")
+	randomize_terrain("Re,Aa", "Ryv^Wel,Ryv^Dr,Ryv^Dr,Ryv^Dr,Ryv^Dr,Ryv^Dr,Ryv^Dr,Ryv^Dr,Ryv^Dr,Uh,Uu,Uh,Uu,Uh,Uu,Uh,Uu,Uh,Uu,Uu^Tf,Uu^Tf,Uu^Tf,Uu^Tf,Uu^Tf,Uu^Tf,Ryv^Dr,Ryv^Dr,Ryv^Dr,Ryv^Dr,Ryv^Dr,Ryv^Dr,Ryv^Dr,Ryv^Dr,Uh,Uu,Uh,Uu,Uh,Uu,Uh,Uu,Uh,Uu,Uu^Tf,Uu^Tf,Uu^Tf,Uu^Tf,Uu^Tf,Uu^Tf,Ryv^Dr,Ryv^Dr,Ryv^Dr,Ryv^Dr,Ryv^Dr,Ryv^Dr,Ryv^Dr,Ryv^Dr,Uh,Uu,Uh,Uu,Uh,Uu,Uh,Uu,Uh,Uu,Uu^Tf,Uu^Tf,Uu^Tf,Uu^Tf,Uu^Tf,Uu^Tf")
 elseif wml.variables['dungeon_creation.temp.terrain_variation'] == "Rys" then
-	randomize_terrain("Re,Aa", "Rys^Wel,Rys^Dr,Rys^Dr,Rys^Dr,Rys^Dr,Rys^Dr,Rys^Dr,Rys^Dr,Rys^Dr,Uh,Uu,Uh,Uu,Uh,Uu,Uh,Uu,Uh,Uu,Uu^Uf,Uu^Uf,Uu^Uf,Uu^Uf,Uu^Uf,Uu^Uf,Rys^Dr,Rys^Dr,Rys^Dr,Rys^Dr,Rys^Dr,Rys^Dr,Rys^Dr,Rys^Dr,Uh,Uu,Uh,Uu,Uh,Uu,Uh,Uu,Uh,Uu,Uu^Uf,Uu^Uf,Uu^Uf,Uu^Uf,Uu^Uf,Uu^Uf,Rys^Dr,Rys^Dr,Rys^Dr,Rys^Dr,Rys^Dr,Rys^Dr,Rys^Dr,Rys^Dr,Uh,Uu,Uh,Uu,Uh,Uu,Uh,Uu,Uh,Uu,Uu^Uf,Uu^Uf,Uu^Uf,Uu^Uf,Uu^Uf,Uu^Uf,Rys^Dr,Rys^Dr,Rys^Dr,Rys^Dr,Rys^Dr,Rys^Dr,Rys^Dr,Rys^Dr,Uh,Uu,Uh,Uu,Uh,Uu,Uh,Uu,Uh,Uu,Uu^Uf,Uu^Uf,Uu^Uf,Uu^Uf,Uu^Uf,Uu^Uf")
+	randomize_terrain("Re,Aa", "Rys^Wel,Rys^Dr,Rys^Dr,Rys^Dr,Rys^Dr,Rys^Dr,Rys^Dr,Rys^Dr,Rys^Dr,Uh,Uu,Uh,Uu,Uh,Uu,Uh,Uu,Uh,Uu,Uu^Tf,Uu^Tf,Uu^Tf,Uu^Tf,Uu^Tf,Uu^Tf,Rys^Dr,Rys^Dr,Rys^Dr,Rys^Dr,Rys^Dr,Rys^Dr,Rys^Dr,Rys^Dr,Uh,Uu,Uh,Uu,Uh,Uu,Uh,Uu,Uh,Uu,Uu^Tf,Uu^Tf,Uu^Tf,Uu^Tf,Uu^Tf,Uu^Tf,Rys^Dr,Rys^Dr,Rys^Dr,Rys^Dr,Rys^Dr,Rys^Dr,Rys^Dr,Rys^Dr,Uh,Uu,Uh,Uu,Uh,Uu,Uh,Uu,Uh,Uu,Uu^Tf,Uu^Tf,Uu^Tf,Uu^Tf,Uu^Tf,Uu^Tf,Rys^Dr,Rys^Dr,Rys^Dr,Rys^Dr,Rys^Dr,Rys^Dr,Rys^Dr,Rys^Dr,Uh,Uu,Uh,Uu,Uh,Uu,Uh,Uu,Uh,Uu,Uu^Tf,Uu^Tf,Uu^Tf,Uu^Tf,Uu^Tf,Uu^Tf")
 else
-	randomize_terrain("Re,Aa", "Ryf^Wel,Ryf^Dr,Ryf^Dr,Ryf^Dr,Ryf^Dr,Ryf^Dr,Ryf^Dr,Ryf^Dr,Ryf^Dr,Uh,Uu,Uh,Uu,Uh,Uu,Uh,Uu,Uh,Uu,Uu^Uf,Uu^Uf,Uu^Uf,Uu^Uf,Uu^Uf,Uu^Uf,Ryf^Dr,Ryf^Dr,Ryf^Dr,Ryf^Dr,Ryf^Dr,Ryf^Dr,Ryf^Dr,Uh,Uu,Uh,Uu,Uh,Uu,Uh,Uu,Uh,Uu,Uu^Uf,Uu^Uf,Uu^Uf,Uu^Uf,Uu^Uf,Uu^Uf,Ryf^Dr,Ryf^Dr,Ryf^Dr,Ryf^Dr,Ryf^Dr,Ryf^Dr,Ryf^Dr,Uh,Uu,Uh,Uu,Uh,Uu,Uh,Uu,Uh,Uu,Uu^Uf,Uu^Uf,Uu^Uf,Uu^Uf,Uu^Uf,Uu^Uf,Ryf^Dr,Ryf^Dr,Ryf^Dr,Ryf^Dr,Ryf^Dr,Ryf^Dr,Ryf^Dr,Uh,Uu,Uh,Uu,Uh,Uu,Uh,Uu,Uh,Uu,Uu^Uf,Uu^Uf,Uu^Uf,Uu^Uf,Uu^Uf,Uu^Uf")
+	randomize_terrain("Re,Aa", "Ryf^Wel,Ryf^Dr,Ryf^Dr,Ryf^Dr,Ryf^Dr,Ryf^Dr,Ryf^Dr,Ryf^Dr,Ryf^Dr,Uh,Uu,Uh,Uu,Uh,Uu,Uh,Uu,Uh,Uu,Uu^Tf,Uu^Tf,Uu^Tf,Uu^Tf,Uu^Tf,Uu^Tf,Ryf^Dr,Ryf^Dr,Ryf^Dr,Ryf^Dr,Ryf^Dr,Ryf^Dr,Ryf^Dr,Uh,Uu,Uh,Uu,Uh,Uu,Uh,Uu,Uh,Uu,Uu^Tf,Uu^Tf,Uu^Tf,Uu^Tf,Uu^Tf,Uu^Tf,Ryf^Dr,Ryf^Dr,Ryf^Dr,Ryf^Dr,Ryf^Dr,Ryf^Dr,Ryf^Dr,Uh,Uu,Uh,Uu,Uh,Uu,Uh,Uu,Uh,Uu,Uu^Tf,Uu^Tf,Uu^Tf,Uu^Tf,Uu^Tf,Uu^Tf,Ryf^Dr,Ryf^Dr,Ryf^Dr,Ryf^Dr,Ryf^Dr,Ryf^Dr,Ryf^Dr,Uh,Uu,Uh,Uu,Uh,Uu,Uh,Uu,Uh,Uu,Uu^Tf,Uu^Tf,Uu^Tf,Uu^Tf,Uu^Tf,Uu^Tf")
 end
 
 local trapdoor_data = {}
@@ -91,27 +91,27 @@ wml.variables["dungeon_down.y"] = trapdoor_data.down.y
 
 local mapData
 if wml.variables['dungeon_creation.temp.flow_type'] == 1 then
-	mapData = wesnoth.dofile("~add-ons/Wesband/masks/cross_1.lua")
+	mapData = wesnoth.dofile("~add-ons/Weshack/masks/cross_1.lua")
 elseif wml.variables['dungeon_creation.temp.flow_type'] == 2 then
-	mapData = wesnoth.dofile("~add-ons/Wesband/masks/cross_2.lua")
+	mapData = wesnoth.dofile("~add-ons/Weshack/masks/cross_2.lua")
 elseif wml.variables['dungeon_creation.temp.flow_type'] == 3 then
-	mapData = wesnoth.dofile("~add-ons/Wesband/masks/cross_3.lua")
+	mapData = wesnoth.dofile("~add-ons/Weshack/masks/cross_3.lua")
 elseif wml.variables['dungeon_creation.temp.flow_type'] == 4 then
-	mapData = wesnoth.dofile("~add-ons/Wesband/masks/cross_4.lua")
+	mapData = wesnoth.dofile("~add-ons/Weshack/masks/cross_4.lua")
 elseif wml.variables['dungeon_creation.temp.flow_type'] == 5 then
-	mapData = wesnoth.dofile("~add-ons/Wesband/masks/cross_5.lua")
+	mapData = wesnoth.dofile("~add-ons/Weshack/masks/cross_5.lua")
 elseif wml.variables['dungeon_creation.temp.flow_type'] == 6 then
-	mapData = wesnoth.dofile("~add-ons/Wesband/masks/cross_6.lua")
+	mapData = wesnoth.dofile("~add-ons/Weshack/masks/cross_6.lua")
 elseif wml.variables['dungeon_creation.temp.flow_type'] == 7 then
-	mapData = wesnoth.dofile("~add-ons/Wesband/masks/cross_7.lua")
+	mapData = wesnoth.dofile("~add-ons/Weshack/masks/cross_7.lua")
 elseif wml.variables['dungeon_creation.temp.flow_type'] == 8 then
-	mapData = wesnoth.dofile("~add-ons/Wesband/masks/cross_8.lua")
+	mapData = wesnoth.dofile("~add-ons/Weshack/masks/cross_8.lua")
 elseif wml.variables['dungeon_creation.temp.flow_type'] == 9 then
-	mapData = wesnoth.dofile("~add-ons/Wesband/masks/cross_9.lua")
+	mapData = wesnoth.dofile("~add-ons/Weshack/masks/cross_9.lua")
 elseif wml.variables['dungeon_creation.temp.flow_type'] == 10 then
-	mapData = wesnoth.dofile("~add-ons/Wesband/masks/cross_10.lua")
+	mapData = wesnoth.dofile("~add-ons/Weshack/masks/cross_10.lua")
 else
-	mapData = wesnoth.dofile("~add-ons/Wesband/masks/cross_none.lua")
+	mapData = wesnoth.dofile("~add-ons/Weshack/masks/cross_none.lua")
 end
 
 W.terrain_mask {
