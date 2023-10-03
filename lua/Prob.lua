@@ -181,12 +181,18 @@ function wesnoth.wml_actions.get_prob(cfg)
 		local total_weight = wml.variables[string.format("%s.total_weight", list)] or 0
 		--local r_val = H.rand(string.format("1..$%s.total_weight", list))
 		local r_val = H.rand(string.format("1..%d", total_weight))
+		wesnoth.message(string.format("1..%d", total_weight))
+		local winner = ""
 		for i = 0, item_count - 1 do
 			r_val = r_val - wml.variables[string.format("%s.entry[%i].weight", list, i)]
 			if r_val <= 0 then
-				wml.variables[var] = wml.variables[string.format("%s.entry[%i].item", list, i)]
+				winner = string.format("%s.entry[%i].item", list, i)
+				wml.variables[var] = wml.variables[winner]
 				break
 			end
+		end
+		if winner == "" then
+			H.wml_error(string.format("Failed to find an entry for %s", list))
 		end
 	end
 
