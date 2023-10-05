@@ -399,7 +399,7 @@ local function get_attack_basics(unit, equipment, weapon)
 end
 function wesnoth.wml_actions.calculate_weapon_display(args)
 	local unit_var = args.unit_variable or H.wml_error("[calculate_weapon_display] requires a unit_variable= key")
-	local weapon_var = args.weapon_variable or H.wml_error("[calculate_weapon_display] requires a unit_variable= key")
+	local weapon_var = args.weapon_variable or H.wml_error("[calculate_weapon_display] requires a weapon_variable= key")
 	local unit = parse_container(wml.variables[unit_var])
 	local equipment = get_unit_equipment(unit)
 	local weapon = parse_container(wml.variables[weapon_var])
@@ -2046,7 +2046,7 @@ local function constructUnit(var, unstore)
 					} }
 				} })
 			end
-			if (get_n(weapon, "special_type.vine_slows") > 0 and get_n(unit, "abilities.vine_slows") > 0) or ((not player) and attack.user_name == "kusarigama" and attack.range == "ranged" and get_n(unit, "abilities.kusarigama_slows") > 0) then
+			if (get_n(weapon, "special_type.vine_slows") > 0 and get_n(unit, "abilities.vine_slows") > 0) or ((not player) and attack.user_name == "kusarigama" and attack.range == "ranged" and get_n(unit, "abilities.kusarigama_slows") > 0 or get_n(weapon, "enchantments.slows") > 0) then
 				table.insert(specials, { "slow", {
 					id = "slow",
 					name = "slows",
@@ -2397,6 +2397,24 @@ local function constructUnit(var, unstore)
 				set_p(fire_shot, "special_type.fire_shot_xbow", 0)
 				add_attack(fire_shot)
 			end
+			special_level = get_n(weapon, "enchantments.add_chance_to_hit")
+			if special_level > 0 then
+				table.insert(specials, { "chance_to_hit", {
+					id = "accurate",
+					name = "accurate",
+					description = string.format("This enchanted weapon has a %d%% greater chance to hit", special_level),
+					value = special_level,
+					cumulative = "yes"
+				} })
+			end
+			if get_n(weapon, "enchantments.firststrike") then
+				table.insert(specials, { "firststrike", {
+					id = "firststrike",
+					name = "firststrike",
+					description = "This enchanted weapon will react to any attacker, always striking first regardless of the oaf who wields it."
+				} })
+			end
+
 		end
 	end
 
