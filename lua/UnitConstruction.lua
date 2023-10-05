@@ -2398,18 +2398,18 @@ local function constructUnit(var, unstore)
 				add_attack(fire_shot)
 			end
 			special_level = get_n(weapon, "enchantments.add_chance_to_hit")
-			if special_level > 0 then
+			if (special_level > 0) then
 				table.insert(specials, { "chance_to_hit", {
-					id = "accurate",
+					id = "ench_chance_to_hit",
 					name = "accurate",
 					description = string.format("This enchanted weapon has a %d%% greater chance to hit", special_level),
 					value = special_level,
 					cumulative = "yes"
 				} })
 			end
-			if get_n(weapon, "enchantments.firststrike") then
+			if (get_n(weapon, "enchantments.firststrike") > 0) then
 				table.insert(specials, { "firststrike", {
-					id = "firststrike",
+					id = "ench_firststrike",
 					name = "firststrike",
 					description = "This enchanted weapon will react to any attacker, always striking first regardless of the oaf who wields it."
 				} })
