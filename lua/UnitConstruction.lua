@@ -19,6 +19,7 @@ local function parse_container(wml)
 	end
 	return parsed
 end
+
 local function unparse_container(parsed)
 	local wml = {}
 	for k,v in pairs(parsed.k) do
@@ -31,6 +32,7 @@ local function unparse_container(parsed)
 	end
 	return wml
 end
+
 local function dcp(parsed, aflag)
 	local clone
 	if aflag then
@@ -52,6 +54,7 @@ local function dcp(parsed, aflag)
 	end
 	return clone
 end
+
 local function get_p(parsed, relative)
 	local aflag, t, v = false, parsed
 	if type(relative) ~= "nil" then
@@ -92,11 +95,13 @@ local function get_p(parsed, relative)
 	end
 	return v or t
 end
+
 local function get_n(parsed, relative, num)
 	local n = tonumber(num) or 0
 	local p = get_p(parsed, relative)
 	return tonumber(p) or n
 end
+
 local function clear_p(parsed, relative)
 	if type(relative) ~= "nil" then
 		local p, n, np = string.match(relative, "^([%a%d_]+)%[(%d+)%]%.([%a%d%[%]%._]+)$")
@@ -137,6 +142,7 @@ local function clear_p(parsed, relative)
 	end
 	return parsed
 end
+
 local function set_p(parsed, relative, value, pflag)
 	if type(value) == "nil" then
 		clear_p(parsed, relative)
