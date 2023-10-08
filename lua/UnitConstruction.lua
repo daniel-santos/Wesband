@@ -2409,7 +2409,7 @@ local function constructUnit(var, unstore)
 					id = "ench_chance_to_hit",
 					name = "accurate",
 					description = string.format("This enchanted weapon has a %d%% greater chance to hit", special_level),
-					value = special_level,
+					add = special_level,
 					cumulative = "yes"
 				} })
 			end
