@@ -27,8 +27,8 @@ local function cappend(st1, st2)
 end
 
 function adjustWeaponDescription(wt)
-	if wt.evade_adjust and wt.evade_adjust < 0 then
-		wt.evade_description = string.format(", Evade Adjust: %d", wt.evade_adjust)
+	if wt.evade_adjust and wt.evade_adjust ~= 0 then
+		wt.evade_description = string.format(", Evade Adjust: %s%d", (wt.evade_adjust > 0 and "+" or ""), wt.evade_adjust)
 	end
 	local st1, st2, st3 = "", "", ""
 	if wt.class == "thunderstick" then
@@ -2009,3 +2009,119 @@ function wesnoth.wml_actions.item_cleanup(cfg)
 		end
 	end
 end
+
+function split(str, sep)
+    local array = {}
+    local reg = string.format("([^%s]+)",sep)
+    for mem in string.gmatch(str,reg) do
+        table.insert(array, mem)
+    end
+    return array
+end
+
+function wesnoth.wml_actions.describe_item(cfg)
+    local path = cfg.item or H.wml_error("[describe_item] requires an item= key")
+    local var  = cfg.variable or H.wml_error("[describe_item] requires a variable= key")
+    local item = wesnoth.get_variable(path) or H.wml_error("cannot find variable " .. path)
+    local ench = wesnoth.get_variable(path .. ".enchantments")
+    local ench_stats = wesnoth.get_variable(path .. ".enchantments.stats")
+	local cat  = item.category or "(category missing)" -- this is the case for some items (undroppable only?)
+    local desc = item.description or item.name or "(description missing)"
+    local name = item.name
+    local icon = item.icon
+
+	if type(ench) == "table" then
+        if ench.power > 0 then
+            desc = "<span foreground='green'>" .. desc .."</span>"
+        end
+	end
+	desc = desc .. "\n<small><small>"
+
+	if cat == "(category missing)" then
+
+        if item.range == "melee" then
+            cat = "melee_weapon"
+        elseif item.range == "ranged" then
+            cat = "ranged_weapon"
+        elseif name == "clothes" or icon == "armor/tunic" then
+            cat = "torso_armor"
+        elseif name == "pants_shoes" or name == "loincloth" or icon == "armor/shoes" then
+            cat = "legs_armor"
+        elseif icon == "armor/head" or icon == "armor/elf-head" or icon == "armor/troll-head" then
+            cat = "head_armor"
+        elseif icon == "categories/armor-arms" then
+            cat = "head_armor"
+        else
+            std_print(dump_value(item, "bad_item", "", "  ", 24) .. "\n")
+            H.wml_error("category missing and could not determine from other properties")
+        end
+	end
+	std_print(dump_value(item, "item", "", "  ", 24) .. "\n")
+
+	local arch_cat = split(cat, "_")[2]
+	local slot     = split(cat, "_")[1]
+
+	if cat == "shield" then
+        arch_cat = "shield"
+        slot  = "shield"
+	elseif arch_cat == "weapon" then
+	elseif arch_cat == "armor" then
+        local i
+        local defense_adjust = 0
+        local resistance = wesnoth.get_variable(path .. ".resistance")
+        if item.terrain and item.terrain.flat then
+            defense_adjust = item.terrain.flat.defense or 0
+            if defense_adjust then
+                defense_adjust = defense_adjust * -1
+            end
+        end
+        std_print(dump_value(resistance, "item.resistance", "", "  ", 24) .. "\n")
+        std_print(dump_value(resistance.blade, "item.resistance.blade", "", "  ", 24) .. "\n")
+
+        local stats = {
+            {"arcane",     resistance.arcane,  ench_stats and ench_stats.arcane},
+            {"blade",      resistance.blade,   ench_stats and ench_stats.blade},
+            {"fire",       resistance.fire,    ench_stats and ench_stats.fire},
+            {"cold",       resistance.cold,    ench_stats and ench_stats.cold},
+            {"impact",     resistance.impact,  ench_stats and ench_stats.impact},
+            {"magic adj",  item.magic_adjust,  ench_stats and ench_stats.magic_adjust},
+            {"ranged adj", item.ranged_adjust, ench_stats and ench_stats.ranged_adjust},
+            {"evade adj",  item.evade_adjust,  ench_stats and ench_stats.evade_adjust},
+            {"def adj",    defense_adjust,     ench_stats and ench_stats.defense_adjust},
+        }
+
+        local delimit = false
+        for i = 1, #stats do
+            -- keep with tradition and don't show magic or defense adjust for items other
+            -- than legs and torso, unless it's non-zero for some reason.
+            local hide = (i == 6 or i == 9) and (not stats[i][2] or stats[i][2] == 0)
+            if (i == 6 or i == 9) and (slot == "torso" or slot == "legs") then
+                hide = false
+            end
+
+            -- These stats are clasically either negative or zero, but this can change after
+            -- enchantment.
+            local plus = (i > 5 and stats[i][2] and stats[i][2] > 0) and "+" or ""
+            if not hide then
+                local info = plus .. tostring(stats[i][2]) .. "% " .. stats[i][1]
+
+                -- If this stat was enchanted, then make it green
+                if stats[i][3] then
+                    info = "<span foreground='green'>" .. info .."</span>"
+                end
+                desc = desc .. (delimit and ", " or "") .. info
+                delimit = true
+                if i == 5 then
+                    desc = desc .. "\n"
+                    delimit = false
+                end
+            end
+        end
+	end
+	desc = desc .. "</small></small>"
+    wesnoth.set_variable(var, {
+        image = icon .. ".png",
+        label = desc
+	})
+end
+
