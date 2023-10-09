@@ -1,25 +1,162 @@
+
+-- dump whatever
+function dump_lua_value(node, name, indent_next, max_key_pad, allow_folding)
+	node = node or H.wml_error("dump_lua_value needs node")
+	name = name or "value"
+	indent_next = indent_next or "  "
+	max_key_pad = max_key_pad or 24
+-- 	allow_folding = allow_folding ~= nil and allow_folding or false
+
+	local out = name .. " = " .. mnemonic_for_typeof(node) .. " "
+
+	if type(node) == "table" then
+		return out .. dump_lua_table(node, indent_next, max_key_pad)
+	elseif type(node) == "boolean" or type(node) == "number" or type(node) == "string" then
+		return out .. tostring(node)
+	else
+		return out .. "(not dumped)"
+	end
+end
+
+function dump_lua_table(node, indent_next, max_key_pad, indent, allow_folding)
+	node = node or H.wml_error("dump_lua_table() missing required node argument")
+	indent_next = indent_next or "  "
+	max_key_pad = max_key_pad or 24
+	indent = indent or ""
+-- 	allow_folding = allow_folding ~= nil and allow_folding or false
+
+	if (type(node) ~= "table") then
+		error("node not a table: " .. tostring(node))
+	end
+
+	local out = "{"
+	local indent_body = indent .. indent_next
+	local nchildren = 0
+	local key_pad = 0
+	local is_array = true
+	local k, v
+	local key_str
+
+	-- find maximum key length (as string) and determine if this is just a pure array or not
+	for k, v in pairs(node) do
+		key_str = tostring(k)
+		if (#key_str > key_pad) then
+			key_pad = #key_str
+		end
+		if type(k) ~= "number" then
+			is_array = false
+		end
+		nchildren = nchildren + 1
+	end
+	-- allow folding tables with less than two children
+	local do_folding = nchildren < 2 --  and allow_folding
+
+	-- if array, we'll need two extra columns for []
+	if is_array then
+		key_pad = key_pad + 2
+	end
+
+	-- limit to max_key_pad
+	key_pad = key_pad < max_key_pad and key_pad or max_key_pad
+	local first = true
+
+	for k, v in pairs(node) do
+		local value
+		local use_padding = not do_folding	-- we're not going to pad keys for tables or fold the table
+
+		if type(v) == "table" then
+			value = dump_lua_table(v, indent_next, max_key_pad, indent_body)
+			use_padding = false
+		elseif type(v) == "boolean" or type(v) == "number" or type(v) == "string" then
+			value = mnemonic_for_typeof(v) .. " " .. tostring(v)
+		else
+			value = mnemonic_for_typeof(v) .. " (not displayed)"
+		end
+
+		key_str = tostring(k)
+		if is_array then
+			key_str = "[" .. key_str .. "]"
+		end
+		if use_padding then
+			key_str = string.format("%-" .. tostring(key_pad) .. "s", key_str)
+		end
+		out = out .. (do_folding and "" or "\n" .. indent_body) .. key_str ..
+			" = " .. value
+		first = false
+	end
+	return out .. ((nchildren > 1 or not do_folding) and "\n" .. indent or "")  .. "}"
+end
+
+function shitty_dump_table(table, depth)
+  local out = ""
+  depth = depth or 0
+  if (depth > 200) then
+    print("Error: Depth > 200 in shitty_dump_table()")
+    return
+  end
+  local k, v
+  for k, v in pairs(table) do
+    out = out .. string.rep("  ", depth) .. k
+    if (type(v) == "table") then
+      out = out .. " {\n" .. shitty_dump_table(v, depth + 1) .. string.rep("  ", depth) .. "}\n"
+    else
+      out = out .. " = " .. tostring(v) .. "\n"
+    end
+  end
+  return out
+end
+
+
+-- What does this do?
 local function parse_container(wml)
 	local parsed
 	if not (type(wml) == "table") then
 		parsed = wml
 	else
+		std_print(dump_lua_value(wml, "wml", "  "))
+		-- parsed contains two tables named k and c
 		parsed = { k = {}, c = {} }
+		-- copy the key/value pair of each table in the wml into parsed.k
 		for k,v in pairs(wml) do
 			if not (type(v) == "table") then
 				parsed.k[k] = v
 			end
 		end
+
+		local not_so = false
 		for i = 1, #wml do
-			if parsed.c[wml[i][1]] then
-				table.insert(parsed.c[wml[i][1]], parse_container(wml[i][2]))
+			if wml[i][1] == nil then
+				H.wml_error(string.format("AH HAH! wml[i][1] is nil", tostring(wml)))
+			elseif type(wml[i][1]) == "table" then
+				std_print("A wml[" .. tostring(i) .. "][1] = (" .. type(wml[i][1]) .. ") {[1] = " .. tostring(wml[i][1][1]) .. "}")
+				std_print("A wml[" .. tostring(i) .. "][2] = (" .. type(wml[i][2]) .. ") " .. tostring(wml[i][2]))
+			elseif type(wml[i]) == "table" then
+				std_print("B wml[" .. tostring(i) .. "]    = (" .. type(wml[i]) .. ") {[1] = " .. tostring(wml[i][1]) .. "}")
+				std_print("B wml[" .. tostring(i) .. "][1] = (" .. type(wml[i][1]) .. ") " .. tostring(wml[i][1]))
 			else
-				parsed.c[wml[i][1]] = { parse_container(wml[i][2]) }
+				not_so = true
+				std_print("C wml[" .. tostring(i) .. "][1] = (" .. type(little_fucker) .. ") " .. tostring(little_fucker))
 			end
+		end
+		if not_so then
+			std_print(dump_lua_value(wml, "wml", "  "))
+			--std_print(shitty_dump_table(wml))
+		end
+
+		-- iterate through wml again
+		for i = 1, #wml do
+            -- first, we presume that every entry is a table. If it isn't, then  wml[i][1] returns nil parsed.c[nil] = {something} should be an error.
+            -- is fine
+			if not parsed.c[wml[i][1]] then
+				parsed.c[wml[i][1]] = {}
+			end
+			table.insert(parsed.c[wml[i][1]], parse_container(wml[i][2]))
 		end
 	end
 	return parsed
 end
 
+-- What does this do?
 local function unparse_container(parsed)
 	local wml = {}
 	for k,v in pairs(parsed.k) do

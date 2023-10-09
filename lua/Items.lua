@@ -2126,6 +2126,7 @@ function wesnoth.wml_actions.describe_item(cfg)
             -- keep with tradition and don't show magic or defense adjust for items other
             -- than legs and torso, unless it's non-zero for some reason.
             local hide = (i == 6 or i == 9) and (not stats[i][2] or stats[i][2] == 0)
+            hide = hide or (i == 7) and slot == "legs" and (not stats[i][2] or stats[i][2] == 0)
             if (i == 6 or i == 9) and (slot == "torso" or slot == "legs") then
                 hide = false
             end
@@ -2177,17 +2178,20 @@ function wesnoth.wml_actions.describe_item(cfg)
 	if mode == "replace" then
         wesnoth.set_variable(var, result)
     elseif mode == "append" then
-        if not wml.array_variables[var] then
-            wml.array_variables[var] = {}
+        local value = wml.array_access.get(var)
+        if not value then
+            value = {}
         end
-        local value = wml.array_variables[var]
+
         std_print(dumpTable(value))
         std_print(dump_value(value, "before", "", "  ", 24) .. "\n")
-        std_print(wml.tostring({"before", {value}}))
+--         std_print(wml.tostring({"before", {value}}))
         table.insert(value, {tag, result})
         std_print(dumpTable(value))
         std_print(dump_value(value, "after", "", "  ", 24) .. "\n")
-        std_print(wml.tostring({"after", value}))
+--         std_print(wml.tostring({"after", value}))
+--         wesnoth.set_variable(var, value)
+        wml.array_access.set(var, value)
     else
         H.wml_error("[describe_item] invalid mode; must be either 'replace' or 'append'")
     end

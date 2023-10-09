@@ -6,23 +6,27 @@
 --      [/lua]
 --  [/event]
 
-function mnemonic_for_type(t)
+function mnemonic_for_typeof(v)
     local mnemonics = {
         table = "T",
         number = "N",
         string = "S",
         boolean = "B"
     }
-    local result = mnemonics[t]
-    return result == nil and t or result
+    return mnemonics[type(v)] or "(" .. type(v) .. ")"
 end
 
 -- dump whatever
-function dump_value(node, name, indent, indent_next, max_pad)
-    local out = name .. " = " .. mnemonic_for_type(type(node)) .. " "
+function dump_value(node, name, indent, indent_next, max_key_pad)
+	node = node or H.wml_error("dump_value needs node")
+	name = name or "value"
+	indent = indent or ""
+	indent_next = indent_next or " "
+	max_key_pad = max_key_pad or 24
+    local out = name .. " = " .. mnemonic_for_typeof(node) .. " "
 
     if type(node) == "table" then
-        return dump_table(node, name, indent, indent_next, max_pad)
+        return dump_table(node, name, indent, indent_next, max_key_pad)
     elseif type(node) == "boolean" or type(node) == "number" or type(node) == "string" then
         return out .. node
     else
@@ -30,12 +34,12 @@ function dump_value(node, name, indent, indent_next, max_pad)
     end
 end
 
-function dump_table(node, name, indent, indent_next, max_pad)
+function dump_table(node, name, indent, indent_next, max_key_pad)
     if (type(node) ~= "table") then
         error("node not a table: " .. tostring(node))
     end
 
-    local out --  = mnemonic_for_type(type(node)) .. " "
+    local out --  = mnemonic_for_typeof(node) .. " "
     out = "[" .. tostring(name) .. "]\n"
 
     local indent_body = indent .. indent_next
@@ -65,7 +69,7 @@ function dump_table(node, name, indent, indent_next, max_pad)
         key_pad = key_pad + 2
     end
 
-    key_pad = key_pad < max_pad and key_pad or max_pad
+    key_pad = key_pad < max_key_pad and key_pad or max_key_pad
 
     for k, v in pairs(node) do
         if k == 1 and type(v) == string then
@@ -86,10 +90,10 @@ function dump_table(node, name, indent, indent_next, max_pad)
                         v = v[2]
                     end
                 end
---                 line = indent_body .. key_str .. " = " .. dump_table(v, indent_body, indent_next, max_pad)
-                line = indent_body .. dump_table(v, key_str, indent_body, indent_next, max_pad)
+--                 line = indent_body .. key_str .. " = " .. dump_table(v, indent_body, indent_next, max_key_pad)
+                line = indent_body .. dump_table(v, key_str, indent_body, indent_next, max_key_pad)
             else
-                line = indent_body .. string.format("%-" .. tostring(key_pad) .. "s", key_str) ..  " = " .. mnemonic_for_type(type(v)) .. " "
+                line = indent_body .. string.format("%-" .. tostring(key_pad) .. "s", key_str) ..  " = " .. mnemonic_for_typeof(v) .. " "
                 if type(v) == "boolean" or type(v) == "number" or type(v) == "string" then
                     line = line .. tostring(v)
                 else
@@ -100,7 +104,7 @@ function dump_table(node, name, indent, indent_next, max_pad)
             first = false
         end
     end
-    return out .. (first and "}" or "\n" .. indent .. "[/" .. tostring(name) .. "]")
+    return out .. indent .. "[/" .. tostring(name) .. "]"
 
 --     local cache, stack, output = {},{},{}
 --     local depth = 1
