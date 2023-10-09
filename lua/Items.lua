@@ -2019,9 +2019,38 @@ function split(str, sep)
     return array
 end
 
+function dumpTable(table, depth)
+  local out = ""
+  depth = depth or 0
+  if (depth > 200) then
+    print("Error: Depth > 200 in dumpTable()")
+    return
+  end
+  local k, v
+  for k, v in pairs(table) do
+    out = out .. string.rep("  ", depth) .. k
+    if (type(v) == "table") then
+      out = out .. "{\n" .. dumpTable(v, depth + 1) .. string.rep("  ", depth) .. "}\n"
+    else
+      out = out .. ":" .. v .. "\n"
+    end
+  end
+  return out
+end
+
+-- [describe_item]
+--     item - name of the variable containing the item
+--     name - name a variable to store the result in
+--     mode - either "replace" or "append", as with [set_variables], but does
+--            not support insert or merge. Default value is "replace".
+--     tag  - a tag name, defaults to "value"
+-- [/describe_item]
 function wesnoth.wml_actions.describe_item(cfg)
+    std_print(dump_value(cfg, "describe_item", "", "  ", 24) .. "\n")
     local path = cfg.item or H.wml_error("[describe_item] requires an item= key")
-    local var  = cfg.variable or H.wml_error("[describe_item] requires a variable= key")
+    local var  = cfg.name or H.wml_error("[describe_item] requires a name= key")
+    local mode = cfg.mode or "replace"
+    local tag  = cfg.tag  or "value"
     local item = wesnoth.get_variable(path) or H.wml_error("cannot find variable " .. path)
     local ench = wesnoth.get_variable(path .. ".enchantments")
     local ench_stats = wesnoth.get_variable(path .. ".enchantments.stats")
@@ -2029,6 +2058,8 @@ function wesnoth.wml_actions.describe_item(cfg)
     local desc = item.description or item.name or "(description missing)"
     local name = item.name
     local icon = item.icon
+    local i
+
 
 	if type(ench) == "table" then
         if ench.power > 0 then
@@ -2056,7 +2087,8 @@ function wesnoth.wml_actions.describe_item(cfg)
             H.wml_error("category missing and could not determine from other properties")
         end
 	end
-	std_print(dump_value(item, "item", "", "  ", 24) .. "\n")
+	std_print(wml.tostring(item))
+-- 	std_print(dump_value(item, "item", "", "  ", 24) .. "\n")
 
 	local arch_cat = split(cat, "_")[2]
 	local slot     = split(cat, "_")[1]
@@ -2066,7 +2098,6 @@ function wesnoth.wml_actions.describe_item(cfg)
         slot  = "shield"
 	elseif arch_cat == "weapon" then
 	elseif arch_cat == "armor" then
-        local i
         local defense_adjust = 0
         local resistance = wesnoth.get_variable(path .. ".resistance")
         if item.terrain and item.terrain.flat then
@@ -2119,9 +2150,46 @@ function wesnoth.wml_actions.describe_item(cfg)
         end
 	end
 	desc = desc .. "</small></small>"
-    wesnoth.set_variable(var, {
+    local result = {
         image = icon .. ".png",
         label = desc
-	})
+	}
+--     std_print(dump_value(result, "result", "", "  ", 24) .. "\n")
+--     std_print(wml.tostring(result))
+--      - name of the variable containing the item
+--      - name a variable to store the result in
+--      - either replace or append, like [set_variables] defaults to replace
+--       - a tag name, defaults to "value"
+	-- copy any other arbitrary values from input
+	local k, v
+	for k, v in pairs(cfg) do
+        if not (k == "item" or k == "name" or k == "mode" or k == "tag") then
+            if type(v) == "table" then -- and type(v[1]) == "string" and #v == 2 and type(v[2]) == "table" then
+                result[#result + 1] = v
+            else
+                result[k] = v
+            end
+        end
+	end
+-- 	std_print(wml.tostring(result))
+    std_print(dump_value({"result_plus", result}, "result_plus", "", "  ", 24) .. "\n")
+
+	if mode == "replace" then
+        wesnoth.set_variable(var, result)
+    elseif mode == "append" then
+        if not wml.array_variables[var] then
+            wml.array_variables[var] = {}
+        end
+        local value = wml.array_variables[var]
+        std_print(dumpTable(value))
+        std_print(dump_value(value, "before", "", "  ", 24) .. "\n")
+        std_print(wml.tostring({"before", {value}}))
+        table.insert(value, {tag, result})
+        std_print(dumpTable(value))
+        std_print(dump_value(value, "after", "", "  ", 24) .. "\n")
+        std_print(wml.tostring({"after", value}))
+    else
+        H.wml_error("[describe_item] invalid mode; must be either 'replace' or 'append'")
+    end
 end
 

@@ -43,6 +43,7 @@ function dump_table(node, name, indent, indent_next, max_pad)
     local first = true
     local key_pad = 0
     local is_array = true
+    local k, v
     for k, v in pairs(node) do
         if k == 1 and type(v) == string then
             -- this is the name of the table
