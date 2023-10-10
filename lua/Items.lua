@@ -2046,114 +2046,128 @@ end
 --     tag  - a tag name, defaults to "value"
 -- [/describe_item]
 function wesnoth.wml_actions.describe_item(cfg)
-    std_print(dump_value(cfg, "describe_item", "", "  ", 24) .. "\n")
-    local path = cfg.item or H.wml_error("[describe_item] requires an item= key")
-    local var  = cfg.name or H.wml_error("[describe_item] requires a name= key")
-    local mode = cfg.mode or "replace"
-    local tag  = cfg.tag  or "value"
-    local item = wesnoth.get_variable(path) or H.wml_error("cannot find variable " .. path)
-    local ench = wesnoth.get_variable(path .. ".enchantments")
-    local ench_stats = wesnoth.get_variable(path .. ".enchantments.stats")
+	std_print(dump_value(cfg, "describe_item", "", "  ", 24) .. "\n")
+	local path = cfg.item or H.wml_error("[describe_item] requires an item= key")
+	local var  = cfg.name or H.wml_error("[describe_item] requires a name= key")
+	local mode = cfg.mode or "replace"
+	local tag  = cfg.tag  or "value"
+	local item = wesnoth.get_variable(path) or H.wml_error("cannot find variable " .. path)
+	local ench = wesnoth.get_variable(path .. ".enchantments")
+	local ench_stats = wesnoth.get_variable(path .. ".enchantments.stats")
 	local cat  = item.category or "(category missing)" -- this is the case for some items (undroppable only?)
-    local desc = item.description or item.name or "(description missing)"
-    local name = item.name
-    local icon = item.icon
-    local i
+	local desc = item.description or item.name or "(description missing)"
+	local name = item.name
+	local icon = item.icon
+	local arch_cat, slot
+	local i
 
 
 	if type(ench) == "table" then
-        if ench.power > 0 then
-            desc = "<span foreground='green'>" .. desc .."</span>"
-        end
+		if ench.power > 0 then
+			desc = "<span foreground='green'>" .. desc .."</span>"
+		end
 	end
 	desc = desc .. "\n<small><small>"
 
 	if cat == "(category missing)" then
 
-        if item.range == "melee" then
-            cat = "melee_weapon"
-        elseif item.range == "ranged" then
-            cat = "ranged_weapon"
-        elseif name == "clothes" or icon == "armor/tunic" then
-            cat = "torso_armor"
-        elseif name == "pants_shoes" or name == "loincloth" or icon == "armor/shoes" then
-            cat = "legs_armor"
-        elseif icon == "armor/head" or icon == "armor/elf-head" or icon == "armor/troll-head" then
-            cat = "head_armor"
-        elseif icon == "categories/armor-arms" then
-            cat = "head_armor"
-        else
-            std_print(dump_value(item, "bad_item", "", "  ", 24) .. "\n")
-            H.wml_error("category missing and could not determine from other properties")
-        end
+		if item.range == "melee" then
+			cat = "melee_weapon"
+		elseif item.range == "ranged" then
+			cat = "ranged_weapon"
+		elseif name == "clothes" or icon == "armor/tunic" then
+			cat = "torso_armor"
+		elseif name == "pants_shoes" or name == "loincloth" or icon == "armor/shoes" then
+			cat = "legs_armor"
+		elseif icon == "armor/head" or icon == "armor/elf-head" or icon == "armor/troll-head" then
+			cat = "head_armor"
+		elseif icon == "categories/armor-arms" then
+			cat = "head_armor"
+		else
+			std_print(dump_value(item, "bad_item", "", "  ", 24) .. "\n")
+			H.wml_error("category missing and could not determine from other properties")
+		end
 	end
 	std_print(wml.tostring(item))
 -- 	std_print(dump_value(item, "item", "", "  ", 24) .. "\n")
 
-	local arch_cat = split(cat, "_")[2]
-	local slot     = split(cat, "_")[1]
-
 	if cat == "shield" then
-        arch_cat = "shield"
-        slot  = "shield"
-	elseif arch_cat == "weapon" then
+		arch_cat = "armor"
+		slot     = "shield"
+	else
+		arch_cat = split(cat, "_")[2]
+		slot     = split(cat, "_")[1]
+	end
+
+	if arch_cat == "weapon" then
 	elseif arch_cat == "armor" then
-        local defense_adjust = 0
-        local resistance = wesnoth.get_variable(path .. ".resistance")
-        if item.terrain and item.terrain.flat then
-            defense_adjust = item.terrain.flat.defense or 0
-            if defense_adjust then
-                defense_adjust = defense_adjust * -1
-            end
-        end
-        std_print(dump_value(resistance, "item.resistance", "", "  ", 24) .. "\n")
-        std_print(dump_value(resistance.blade, "item.resistance.blade", "", "  ", 24) .. "\n")
+		local defense_adjust = 0
+		local resistance = wesnoth.get_variable(path .. ".resistance")
+		if item.terrain and item.terrain.flat then
+			defense_adjust = item.terrain.flat.defense or 0
+			if defense_adjust then
+				defense_adjust = defense_adjust * -1
+			end
+		end
+		std_print(dump_value(resistance, "item.resistance", "", "  ", 24) .. "\n")
+		std_print(dump_value(resistance.blade, "item.resistance.blade", "", "  ", 24) .. "\n")
 
-        local stats = {
-            {"arcane",     resistance.arcane,  ench_stats and ench_stats.arcane},
-            {"blade",      resistance.blade,   ench_stats and ench_stats.blade},
-            {"fire",       resistance.fire,    ench_stats and ench_stats.fire},
-            {"cold",       resistance.cold,    ench_stats and ench_stats.cold},
-            {"impact",     resistance.impact,  ench_stats and ench_stats.impact},
-            {"magic adj",  item.magic_adjust,  ench_stats and ench_stats.magic_adjust},
-            {"ranged adj", item.ranged_adjust, ench_stats and ench_stats.ranged_adjust},
-            {"evade adj",  item.evade_adjust,  ench_stats and ench_stats.evade_adjust},
-            {"def adj",    defense_adjust,     ench_stats and ench_stats.defense_adjust},
-        }
+		local stats = {
+			{"arcane",     resistance.arcane,  ench_stats and ench_stats.arcane},
+			{"blade",      resistance.blade,   ench_stats and ench_stats.blade},
+			{"fire",       resistance.fire,    ench_stats and ench_stats.fire},
+			{"cold",       resistance.cold,    ench_stats and ench_stats.cold},
+			{"impact",     resistance.impact,  ench_stats and ench_stats.impact},
+			{"magic adj",  item.magic_adjust,  ench_stats and ench_stats.magic_adjust},
+			{"ranged adj", item.ranged_adjust, ench_stats and ench_stats.ranged_adjust},
+			{"evade adj",  item.evade_adjust,  ench_stats and ench_stats.evade_adjust},
+			{"def adj",    defense_adjust,     ench_stats and ench_stats.defense_adjust},
+		}
 
-        local delimit = false
-        for i = 1, #stats do
-            -- keep with tradition and don't show magic or defense adjust for items other
-            -- than legs and torso, unless it's non-zero for some reason.
-            local hide = (i == 6 or i == 9) and (not stats[i][2] or stats[i][2] == 0)
-            hide = hide or (i == 7) and slot == "legs" and (not stats[i][2] or stats[i][2] == 0)
-            if (i == 6 or i == 9) and (slot == "torso" or slot == "legs") then
-                hide = false
-            end
+		-- Encoding of what is tranditionally displayed for each item type,
+		-- matching what an item can have by default. Since item enchantment,
+		-- however, this can be changed now. Still we'll only a stat for an
+		-- armor slot that's non-tranditional if it's been magically modified.
+		local idiosynchs = {
+			-- Slot		show	show	show	show	show	show
+			--			res		magic	ranged	evade	defense	defense
+			--					adjust	adjust	adjust	adjust	recoup
+			shield	 = {0,		1,		1,		1,		0,		1},
+			head	 = {1,		0,		1,		1,		0,		0},
+			torso	 = {1,		1,		0,		1,		1,		0},
+			legs	 = {1,		1,		0,		1,		1,		0},
+		}
 
-            -- These stats are clasically either negative or zero, but this can change after
-            -- enchantment.
-            local plus = (i > 5 and stats[i][2] and stats[i][2] > 0) and "+" or ""
-            if not hide then
-                local info = plus .. tostring(stats[i][2]) .. "% " .. stats[i][1]
+		local delimit = false
+		for i = 1, #stats do
+			-- We lump all resistances together (since shields don't normally have any)
+			local normally_hide = not idiosynchs[slot][i > 5 and i - 4 or i]
+			local have_stat = stats[i][2] and stats[i][2] ~= 0
+			local hide = normally_hide and not have_stat
 
-                -- If this stat was enchanted, then make it green
-                if stats[i][3] then
-                    info = "<span foreground='green'>" .. info .."</span>"
-                end
-                desc = desc .. (delimit and ", " or "") .. info
-                delimit = true
-                if i == 5 then
-                    desc = desc .. "\n"
-                    delimit = false
-                end
-            end
-        end
+			if not hide then
+				-- These stats are clasically either negative or zero, but this can change after
+				-- enchantment.
+				local plus = (i > 5 and have_stat) and "+" or ""
+				local info = plus .. tostring(stats[i][2]) .. "% " .. stats[i][1]
+
+				-- If this stat was enchanted, then make it green
+				if stats[i][3] then
+					info = "<span foreground='green'>" .. info .."</span>"
+				end
+				desc = desc .. (delimit and ", " or "") .. info
+				delimit = true
+				if i == 5 then
+					desc = desc .. "\n"
+					delimit = false
+				end
+			end
+		end
 	end
 	desc = desc .. "</small></small>"
-    local result = {
-        image = icon .. ".png",
-        label = desc
+	local result = {
+		image = icon .. ".png",
+		label = desc
 	}
 --     std_print(dump_value(result, "result", "", "  ", 24) .. "\n")
 --     std_print(wml.tostring(result))
@@ -2164,13 +2178,13 @@ function wesnoth.wml_actions.describe_item(cfg)
 	-- copy any other arbitrary values from input
 	local k, v
 	for k, v in pairs(cfg) do
-        if not (k == "item" or k == "name" or k == "mode" or k == "tag") then
-            if type(v) == "table" then -- and type(v[1]) == "string" and #v == 2 and type(v[2]) == "table" then
-                result[#result + 1] = v
-            else
-                result[k] = v
-            end
-        end
+		if not (k == "item" or k == "name" or k == "mode" or k == "tag") then
+			if type(v) == "table" then -- and type(v[1]) == "string" and #v == 2 and type(v[2]) == "table" then
+				result[#result + 1] = v
+			else
+				result[k] = v
+			end
+		end
 	end
 -- 	std_print(wml.tostring(result))
     std_print(dump_value({"result_plus", result}, "result_plus", "", "  ", 24) .. "\n")

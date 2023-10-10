@@ -106,14 +106,16 @@ function shitty_dump_table(table, depth)
   return out
 end
 
-
--- What does this do?
+-- parse_container - convert a WML Lua container into a more Lua structure.
+-- The result will contain a pair of Lua tables for each level of the WML
+-- container:
+-- parsed.k = key/scalar-value pairs from the WML container
+-- parsed.c = key/container pairs from the WML container
 local function parse_container(wml)
 	local parsed
 	if not (type(wml) == "table") then
 		parsed = wml
 	else
-		std_print(dump_lua_value(wml, "wml", "  "))
 		-- parsed contains two tables named k and c
 		parsed = { k = {}, c = {} }
 		-- copy the key/value pair of each table in the wml into parsed.k
@@ -123,30 +125,10 @@ local function parse_container(wml)
 			end
 		end
 
-		local not_so = false
-		for i = 1, #wml do
-			if wml[i][1] == nil then
-				H.wml_error(string.format("AH HAH! wml[i][1] is nil", tostring(wml)))
-			elseif type(wml[i][1]) == "table" then
-				std_print("A wml[" .. tostring(i) .. "][1] = (" .. type(wml[i][1]) .. ") {[1] = " .. tostring(wml[i][1][1]) .. "}")
-				std_print("A wml[" .. tostring(i) .. "][2] = (" .. type(wml[i][2]) .. ") " .. tostring(wml[i][2]))
-			elseif type(wml[i]) == "table" then
-				std_print("B wml[" .. tostring(i) .. "]    = (" .. type(wml[i]) .. ") {[1] = " .. tostring(wml[i][1]) .. "}")
-				std_print("B wml[" .. tostring(i) .. "][1] = (" .. type(wml[i][1]) .. ") " .. tostring(wml[i][1]))
-			else
-				not_so = true
-				std_print("C wml[" .. tostring(i) .. "][1] = (" .. type(little_fucker) .. ") " .. tostring(little_fucker))
-			end
-		end
-		if not_so then
-			std_print(dump_lua_value(wml, "wml", "  "))
-			--std_print(shitty_dump_table(wml))
-		end
-
 		-- iterate through wml again
 		for i = 1, #wml do
-            -- first, we presume that every entry is a table. If it isn't, then  wml[i][1] returns nil parsed.c[nil] = {something} should be an error.
-            -- is fine
+			-- convert all wml children that are tables/arrays into a valid
+			-- child in c (not to overlap with k namespace) into
 			if not parsed.c[wml[i][1]] then
 				parsed.c[wml[i][1]] = {}
 			end
@@ -156,7 +138,7 @@ local function parse_container(wml)
 	return parsed
 end
 
--- What does this do?
+-- unparse (the previously parsed) data back into a WML Lua container
 local function unparse_container(parsed)
 	local wml = {}
 	for k,v in pairs(parsed.k) do
@@ -167,6 +149,65 @@ local function unparse_container(parsed)
 			table.insert(wml, { k, unparse_container(v[i]) })
 		end
 	end
+	return wml
+end
+
+-- This takes it one step further than parse_container, but throws if you
+-- happen to have a scalar key that overlaps with a child container.
+local function wml2lua_table(wml)
+	if not (type(wml) == "table") then
+		return wml
+	end
+	local result = {}
+	local k, v
+
+	-- std_print(dump_lua_value(wml, "wml", "  "))
+
+	-- first copy the scalars in, because that's the easy part.
+	for k, v in pairs(wml) do
+		if type(v) ~= "table" then
+			result[k] = v
+		end
+	end
+
+	for k, v in pairs(wml) do
+		if type(v) == "table" then
+-- 			if type(key) ~= "string" then H.wml_error(string.format("malformed")) end
+-- 			if #v ~= 2 then H.wml_error(string.format("malformed")) end
+			local key = v[1]
+			if result[key] == nil then
+				result[key] = {}
+			elseif type(result[key]) ~= "table" then
+				H.wml_error(string.format("Cannot use wml2lua_table on this WML container " ..
+						    "because the key %s maps to both a scalar and a container, though" ..
+							"this is valid WML.", key))
+			end
+			table.insert(result[key], wml_to_lua_table(v[2]))
+		end
+	end
+
+	return result
+end
+
+local function lua_table2wml(t)
+	if type(t) ~= "table" then
+		H.wml_error(string.format("not a table"))
+	end
+	local wml = {}
+	local k, v
+
+	-- first scalars first in case there's a numeric key with a scalar value.
+	for k, v in pairs(t) do
+		if type(v) ~= "table" then
+			wml[k] = v
+		end
+	end
+	for k, v in pairs(t) do
+		if type(v) == "table" then
+			table.insert(wml, {k , lua_table2wml(v)})
+		end
+	end
+
 	return wml
 end
 
