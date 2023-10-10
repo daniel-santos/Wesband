@@ -171,3 +171,63 @@ function wesnoth.wml_actions.wbd_sort_array ( cfg )
         table.sort(tArray, top_down_left_right)
         wml.array_access.set(cfg.name, tArray)
 end
+
+
+-- This takes it one step further than parse_container, but throws if you
+-- happen to have a scalar key that overlaps with a child container.
+function wml2lua_table(wml)
+	if not (type(wml) == "table") then
+		return wml
+	end
+	local result = {}
+	local k, v
+
+	-- std_print(dump_lua_value(wml, "wml", "  "))
+
+	-- first copy the scalars in, because that's the easy part.
+	for k, v in pairs(wml) do
+		if type(v) ~= "table" then
+			result[k] = v
+		end
+	end
+
+	for k, v in pairs(wml) do
+		if type(v) == "table" then
+-- 			if type(key) ~= "string" then H.wml_error(string.format("malformed")) end
+-- 			if #v ~= 2 then H.wml_error(string.format("malformed")) end
+			local key = v[1]
+			if result[key] == nil then
+				result[key] = {}
+			elseif type(result[key]) ~= "table" then
+				H.wml_error(string.format("Cannot use wml2lua_table on this WML container " ..
+						    "because the key %s maps to both a scalar and a container, though" ..
+							"this is valid WML.", key))
+			end
+			table.insert(result[key], wml2lua_table(v[2]))
+		end
+	end
+
+	return result
+end
+
+function lua_table2wml(t)
+	if type(t) ~= "table" then
+		H.wml_error(string.format("not a table"))
+	end
+	local wml = {}
+	local k, v
+
+	-- first scalars first in case there's a numeric key with a scalar value.
+	for k, v in pairs(t) do
+		if type(v) ~= "table" then
+			wml[k] = v
+		end
+	end
+	for k, v in pairs(t) do
+		if type(v) == "table" then
+			table.insert(wml, {k , lua_table2wml(v)})
+		end
+	end
+
+	return wml
+end

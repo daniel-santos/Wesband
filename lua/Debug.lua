@@ -1,3 +1,4 @@
+-- local utils = wesnoth.require "lua/Utils.lua"
 --  [event]
 --      name=preload
 --      first_time_only=no
@@ -204,4 +205,112 @@ function wesnoth.wml_actions.dump_variable(args)
 	local name = args.name or H.wml_error("[dump_variable] requires a name= key")
 	local var = wml.variables[name]
 	std_print(dump_value(var, name, "", "  ", 24) .. "\n")
+end
+
+-- dump whatever
+function dump_lua_value(node, name, indent_next, max_key_pad, allow_folding)
+	node = node or H.wml_error("dump_lua_value needs node")
+	name = name or "value"
+	indent_next = indent_next or "  "
+	max_key_pad = max_key_pad or 24
+-- 	allow_folding = allow_folding ~= nil and allow_folding or false
+
+	local out = name .. " = " .. mnemonic_for_typeof(node) .. " "
+
+	if type(node) == "table" then
+		return out .. dump_lua_table(node, indent_next, max_key_pad)
+	elseif type(node) == "boolean" or type(node) == "number" or type(node) == "string" then
+		return out .. tostring(node)
+	else
+		return out .. "(not dumped)"
+	end
+end
+
+function dump_lua_table(node, indent_next, max_key_pad, indent, allow_folding)
+	node = node or H.wml_error("dump_lua_table() missing required node argument")
+	indent_next = indent_next or "  "
+	max_key_pad = max_key_pad or 24
+	indent = indent or ""
+-- 	allow_folding = allow_folding ~= nil and allow_folding or false
+
+	if (type(node) ~= "table") then
+		error("node not a table: " .. tostring(node))
+	end
+
+	local out = "{"
+	local indent_body = indent .. indent_next
+	local nchildren = 0
+	local key_pad = 0
+	local is_array = true
+	local k, v
+	local key_str
+
+	-- find maximum key length (as string) and determine if this is just a pure array or not
+	for k, v in pairs(node) do
+		key_str = tostring(k)
+		if (#key_str > key_pad) then
+			key_pad = #key_str
+		end
+		if type(k) ~= "number" then
+			is_array = false
+		end
+		nchildren = nchildren + 1
+	end
+	-- allow folding tables with less than two children
+	local do_folding = nchildren < 2 --  and allow_folding
+
+	-- if array, we'll need two extra columns for []
+	if is_array then
+		key_pad = key_pad + 2
+	end
+
+	-- limit to max_key_pad
+	key_pad = key_pad < max_key_pad and key_pad or max_key_pad
+	local first = true
+	do_folding = false
+
+	for k, v in pairs(node) do
+		local value
+		local use_padding = not do_folding	-- we're not going to pad keys for tables or fold the table
+
+		if type(v) == "table" then
+			value = dump_lua_table(v, indent_next, max_key_pad, indent_body)
+			use_padding = false
+		elseif type(v) == "boolean" or type(v) == "number" or type(v) == "string" then
+			value = mnemonic_for_typeof(v) .. " " .. tostring(v)
+		else
+			value = mnemonic_for_typeof(v) .. " (not displayed)"
+		end
+
+		key_str = tostring(k)
+		if is_array then
+			key_str = "[" .. key_str .. "]"
+		end
+		if use_padding then
+			key_str = string.format("%-" .. tostring(key_pad) .. "s", key_str)
+		end
+		out = out .. (do_folding and "" or "\n" .. indent_body) .. key_str ..
+			" = " .. value
+		first = false
+	end
+	return out .. ((nchildren > 1 or not do_folding) and "\n" .. indent or "")  .. "}"
+end
+
+function shitty_dump_table(table, depth)
+  local out = ""
+  depth = depth or 0
+  if (depth > 200) then
+    print("Error: Depth > 200 in shitty_dump_table()")
+    return
+  end
+  local k, v
+  for k, v in pairs(table) do
+    out = out .. string.rep("  ", depth) .. k
+    if (type(v) == "table") then
+      out = out .. " {\n" .. shitty_dump_table(v, depth + 1) .. string.rep("  ", depth) .. "}\n"
+    else
+      out = out .. " = " .. tostring(v) .. "\n"
+    end
+  end
+  return out
 end
