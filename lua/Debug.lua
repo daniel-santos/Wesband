@@ -104,7 +104,7 @@ function dump_table(node, name, indent, indent_next, max_key_pad)
             first = false
         end
     end
-    return out .. indent .. "[/" .. tostring(name) .. "]"
+    return out .. "\n" .. indent .. "[/" .. tostring(name) .. "]"
 
 --     local cache, stack, output = {},{},{}
 --     local depth = 1

@@ -2043,14 +2043,12 @@ end
 --     name - name a variable to store the result in
 --     mode - either "replace" or "append", as with [set_variables], but does
 --            not support insert or merge. Default value is "replace".
---     tag  - a tag name, defaults to "value"
 -- [/describe_item]
 function wesnoth.wml_actions.describe_item(cfg)
-	std_print(dump_value(cfg, "describe_item", "", "  ", 24) .. "\n")
 	local path = cfg.item or H.wml_error("[describe_item] requires an item= key")
 	local var  = cfg.name or H.wml_error("[describe_item] requires a name= key")
 	local mode = cfg.mode or "replace"
-	local tag  = cfg.tag  or "value"
+	local cmd  = cfg.command
 	local item = wesnoth.get_variable(path) or H.wml_error("cannot find variable " .. path)
 	local ench = wesnoth.get_variable(path .. ".enchantments")
 	local ench_stats = wesnoth.get_variable(path .. ".enchantments.stats")
@@ -2088,7 +2086,7 @@ function wesnoth.wml_actions.describe_item(cfg)
 			H.wml_error("category missing and could not determine from other properties")
 		end
 	end
-	std_print(wml.tostring(item))
+-- 	std_print(wml.tostring(item))
 -- 	std_print(dump_value(item, "item", "", "  ", 24) .. "\n")
 
 	if cat == "shield" then
@@ -2109,8 +2107,9 @@ function wesnoth.wml_actions.describe_item(cfg)
 				defense_adjust = defense_adjust * -1
 			end
 		end
-		std_print(dump_value(resistance, "item.resistance", "", "  ", 24) .. "\n")
-		std_print(dump_value(resistance.blade, "item.resistance.blade", "", "  ", 24) .. "\n")
+-- 		std_print(dump_value(cfg, "describe_item"))
+-- 		std_print(dump_value(resistance, "item.resistance", "", "  ", 24) .. "\n")
+-- 		std_print(dump_value(resistance.blade, "item.resistance.blade", "", "  ", 24) .. "\n")
 
 		local stats = {
 			{"arcane",     resistance.arcane,  ench_stats and ench_stats.arcane},
@@ -2165,11 +2164,14 @@ function wesnoth.wml_actions.describe_item(cfg)
 		end
 	end
 	desc = desc .. "</small></small>"
-	local result = {
-		image = icon .. ".png",
-		label = desc
-	}
+	local result = wml.parsed(cfg)
+	result.item = nil
+	result.name = nil
+	result.mode = nil
+	result.image = icon .. ".png"
+	result.label = desc
 --     std_print(dump_value(result, "result", "", "  ", 24) .. "\n")
+
 --     std_print(wml.tostring(result))
 --      - name of the variable containing the item
 --      - name a variable to store the result in
@@ -2177,32 +2179,93 @@ function wesnoth.wml_actions.describe_item(cfg)
 --       - a tag name, defaults to "value"
 	-- copy any other arbitrary values from input
 	local k, v
-	for k, v in pairs(cfg) do
-		if not (k == "item" or k == "name" or k == "mode" or k == "tag") then
-			if type(v) == "table" then -- and type(v[1]) == "string" and #v == 2 and type(v[2]) == "table" then
-				result[#result + 1] = v
-			else
-				result[k] = v
-			end
-		end
+	if mode == "append" then
+        std_print(dump_value(wml.parsed(cfg), "cfg"))
+        std_print(dump_lua_value(wml.parsed(cfg), "cfg"))
 	end
+-- 	for k, v in pairs(cfg) do
+--         if mode == "append" then
+--             std_print("pairs(cfg) --> " .. k .. " = " .. tostring(v))
+--         end
+-- 		if not (k == "item" or k == "name" or k == "mode" or k == "tag") then
+-- 			if type(v) == "table" then -- and type(v[1]) == "string" and #v == 2 and type(v[2]) == "table" then
+-- 				table.insert(result, v)
+-- 			else
+-- 				result[k] = v
+-- 			end
+-- 		end
+-- 	end
+-- 	for k, v in ipairs(cfg) do
+--         if mode == "append" then
+--             std_print("pairs(ipairs(cfg)) --> " .. k .. " = " .. tostring(v))
+--             if type(v) == "table" then
+--                 for k1, v1 in ipairs(v) do
+--                     std_print("ipairs(cfg) .. pairs --> " .. k1 .. " = " .. tostring(v1))
+--                 end
+--             end
+--         end
+-- 		if not (k == "item" or k == "name" or k == "mode" or k == "tag") then
+-- 			if type(v) == "table" then -- and type(v[1]) == "string" and #v == 2 and type(v[2]) == "table" then
+-- 				table.insert(result, v)
+-- 			else
+-- 				result[k] = v
+-- 			end
+-- 		end
+-- 	end
 -- 	std_print(wml.tostring(result))
-    std_print(dump_value({"result_plus", result}, "result_plus", "", "  ", 24) .. "\n")
+--     std_print(dump_value({"result_plus", result}, "result_plus", "", "  ", 24) .. "\n")
 
 	if mode == "replace" then
-        wesnoth.set_variable(var, result)
+		wesnoth.set_variable(var, {
+			image = icon .. ".png",
+			label = desc
+		})
     elseif mode == "append" then
+        result = wml.parsed(cfg)
+        result.item = nil
+        result.name = nil
+        result.mode = nil
+        result.image = icon .. ".png"
+        result.label = desc
+        if mode == "append" then
+            std_print(dump_value(wml.parsed(cfg), "cfg"))
+            std_print(dump_lua_value(wml.parsed(cfg), "cfg"))
+        end
+
+        std_print(dump_lua_value(ipairs(cfg), "describe_item"))
+
         local value = wml.array_access.get(var)
         if not value then
             value = {}
         end
+        if not value[1] then
+            value[1] = {}
+        end
+-- 	std_print(dump_lua_value(cfg, "describe_item", "", "  ", 24) .. "\n")
+	std_print("cfg.command = " .. tostring(cfg[1][2].command))
 
-        std_print(dumpTable(value))
-        std_print(dump_value(value, "before", "", "  ", 24) .. "\n")
+
+-- 		local value = wml.array_access.get(var)
+
+		std_print("path = " .. path)
+		std_print("var  = " .. var)
+-- 		std_print(dump_value({var, value}, var, "", "  ", 24) .. "\n")
+		std_print(dump_lua_value(value, var, "  "))
+		for k, v in ipairs(cfg) do
+            std_print(" = " .. dump_lua_value(v, k))
+        end
+-- 		std_print(wml.tostring(value[1]))
+
+--         std_print(dumpTable(value))
+--         std_print(dump_value(value, "before", "", "  ", 24) .. "\n")
+--         std_print(wml.tostring(value))
 --         std_print(wml.tostring({"before", {value}}))
-        table.insert(value, {tag, result})
-        std_print(dumpTable(value))
-        std_print(dump_value(value, "after", "", "  ", 24) .. "\n")
+        table.insert(value, result)
+		std_print(dump_value(value, "modified", "", "  ", 24) .. "\n")
+		std_print(dump_lua_value(value, "modified", "  "))
+-- 		std_print(wml.tostring(value[1]))
+--         std_print(dumpTable(value))
+--         std_print(dump_value(value, "after", "", "  ", 24) .. "\n")
 --         std_print(wml.tostring({"after", value}))
 --         wesnoth.set_variable(var, value)
         wml.array_access.set(var, value)

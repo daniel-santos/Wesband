@@ -59,6 +59,7 @@ function dump_lua_table(node, indent_next, max_key_pad, indent, allow_folding)
 	-- limit to max_key_pad
 	key_pad = key_pad < max_key_pad and key_pad or max_key_pad
 	local first = true
+	do_folding = false
 
 	for k, v in pairs(node) do
 		local value
