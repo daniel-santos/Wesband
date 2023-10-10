@@ -2117,6 +2117,7 @@ function wesnoth.wml_actions.describe_item(cfg)
 			{"fire",       resistance.fire,    ench_stats and ench_stats.fire},
 			{"cold",       resistance.cold,    ench_stats and ench_stats.cold},
 			{"impact",     resistance.impact,  ench_stats and ench_stats.impact},
+			{"pierce",     resistance.pierce,  ench_stats and ench_stats.pierce},
 			{"magic adj",  item.magic_adjust,  ench_stats and ench_stats.magic_adjust},
 			{"ranged adj", item.ranged_adjust, ench_stats and ench_stats.ranged_adjust},
 			{"evade adj",  item.evade_adjust,  ench_stats and ench_stats.evade_adjust},
@@ -2140,23 +2141,27 @@ function wesnoth.wml_actions.describe_item(cfg)
 		local delimit = false
 		for i = 1, #stats do
 			-- We lump all resistances together (since shields don't normally have any)
-			local normally_hide = not idiosynchs[slot][i > 5 and i - 4 or i]
+			local normally_hide = not idiosynchs[slot][i > 6 and i - 5 or i]
 			local have_stat = stats[i][2] and stats[i][2] ~= 0
-			local hide = normally_hide and not have_stat
+			local show = not normally_hide or have_stat
 
-			if not hide then
+			if show then
+                local stat
 				-- These stats are clasically either negative or zero, but this can change after
 				-- enchantment.
-				local plus = (i > 5 and have_stat) and "+" or ""
-				local info = plus .. tostring(stats[i][2]) .. "% " .. stats[i][1]
+				if have_stat then
+                    stat = (i > 6 and stats[i][2] > 0 and "+" or "") .. tostring(stats[i][2]) .. "% "
+				else
+                    stat = "0% "
+				end
 
 				-- If this stat was enchanted, then make it green
 				if stats[i][3] then
-					info = "<span foreground='green'>" .. info .."</span>"
+					stat = "<span foreground='green'>" .. stat .."</span>"
 				end
-				desc = desc .. (delimit and ", " or "") .. info
+				desc = desc .. (delimit and ", " or "") .. stat .. stats[i][1]
 				delimit = true
-				if i == 5 then
+				if i == 6 then
 					desc = desc .. "\n"
 					delimit = false
 				end
@@ -2170,70 +2175,10 @@ function wesnoth.wml_actions.describe_item(cfg)
 	result.mode = nil
 	result.image = icon .. ".png"
 	result.label = desc
---     std_print(dump_value(result, "result", "", "  ", 24) .. "\n")
-
---     std_print(wml.tostring(result))
---      - name of the variable containing the item
---      - name a variable to store the result in
---      - either replace or append, like [set_variables] defaults to replace
---       - a tag name, defaults to "value"
-	-- copy any other arbitrary values from input
-	local k, v
-	if mode == "append" then
-        std_print(dump_value(wml.parsed(cfg), "cfg"))
-        std_print(dump_lua_value(wml.parsed(cfg), "cfg"))
-	end
--- 	for k, v in pairs(cfg) do
---         if mode == "append" then
---             std_print("pairs(cfg) --> " .. k .. " = " .. tostring(v))
---         end
--- 		if not (k == "item" or k == "name" or k == "mode" or k == "tag") then
--- 			if type(v) == "table" then -- and type(v[1]) == "string" and #v == 2 and type(v[2]) == "table" then
--- 				table.insert(result, v)
--- 			else
--- 				result[k] = v
--- 			end
--- 		end
--- 	end
--- 	for k, v in ipairs(cfg) do
---         if mode == "append" then
---             std_print("pairs(ipairs(cfg)) --> " .. k .. " = " .. tostring(v))
---             if type(v) == "table" then
---                 for k1, v1 in ipairs(v) do
---                     std_print("ipairs(cfg) .. pairs --> " .. k1 .. " = " .. tostring(v1))
---                 end
---             end
---         end
--- 		if not (k == "item" or k == "name" or k == "mode" or k == "tag") then
--- 			if type(v) == "table" then -- and type(v[1]) == "string" and #v == 2 and type(v[2]) == "table" then
--- 				table.insert(result, v)
--- 			else
--- 				result[k] = v
--- 			end
--- 		end
--- 	end
--- 	std_print(wml.tostring(result))
---     std_print(dump_value({"result_plus", result}, "result_plus", "", "  ", 24) .. "\n")
 
 	if mode == "replace" then
-		wesnoth.set_variable(var, {
-			image = icon .. ".png",
-			label = desc
-		})
+		wesnoth.set_variable(var, result)
     elseif mode == "append" then
-        result = wml.parsed(cfg)
-        result.item = nil
-        result.name = nil
-        result.mode = nil
-        result.image = icon .. ".png"
-        result.label = desc
-        if mode == "append" then
-            std_print(dump_value(wml.parsed(cfg), "cfg"))
-            std_print(dump_lua_value(wml.parsed(cfg), "cfg"))
-        end
-
-        std_print(dump_lua_value(ipairs(cfg), "describe_item"))
-
         local value = wml.array_access.get(var)
         if not value then
             value = {}
@@ -2241,36 +2186,9 @@ function wesnoth.wml_actions.describe_item(cfg)
         if not value[1] then
             value[1] = {}
         end
--- 	std_print(dump_lua_value(cfg, "describe_item", "", "  ", 24) .. "\n")
-	std_print("cfg.command = " .. tostring(cfg[1][2].command))
-
-
--- 		local value = wml.array_access.get(var)
-
-		std_print("path = " .. path)
-		std_print("var  = " .. var)
--- 		std_print(dump_value({var, value}, var, "", "  ", 24) .. "\n")
-		std_print(dump_lua_value(value, var, "  "))
-		for k, v in ipairs(cfg) do
-            std_print(" = " .. dump_lua_value(v, k))
-        end
--- 		std_print(wml.tostring(value[1]))
-
---         std_print(dumpTable(value))
---         std_print(dump_value(value, "before", "", "  ", 24) .. "\n")
---         std_print(wml.tostring(value))
---         std_print(wml.tostring({"before", {value}}))
         table.insert(value, result)
-		std_print(dump_value(value, "modified", "", "  ", 24) .. "\n")
-		std_print(dump_lua_value(value, "modified", "  "))
--- 		std_print(wml.tostring(value[1]))
---         std_print(dumpTable(value))
---         std_print(dump_value(value, "after", "", "  ", 24) .. "\n")
---         std_print(wml.tostring({"after", value}))
---         wesnoth.set_variable(var, value)
         wml.array_access.set(var, value)
     else
         H.wml_error("[describe_item] invalid mode; must be either 'replace' or 'append'")
     end
 end
-
