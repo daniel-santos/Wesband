@@ -29,6 +29,153 @@ end
 local function cappend(st1, st2)
 	return sappend(st1, ", ", st2)
 end
+
+function adjustWeaponDescription(wt)
+	if wt.evade_adjust and wt.evade_adjust ~= 0 then
+		wt.evade_description = string.format(", Evade Adjust: %s%d", (wt.evade_adjust > 0 and "+" or ""), wt.evade_adjust)
+	end
+	local st1, st2, st3 = "", "", ""
+	if wt.class == "thunderstick" then
+		st1 = "requires thunderstick tinker for upkeep and upgrade"
+	end
+	local sp = wml.get_child(wt, "special_type")
+	if sp then
+		if sp.throwable and sp.throwable == 1 then
+			st1 = cappend(st1, "throwable")
+		end
+		if sp.firststrike and sp.firststrike == 1 then
+			st1 = cappend(st1, "allows firststrike")
+		end
+		if sp.allow_poison and sp.allow_poison == 1 then
+			st1 = cappend(st1, "allows poisoning")
+		end
+		if sp.marksman and sp.marksman == 1 then
+			st1 = cappend(st1, "allows marksman")
+		end
+		if sp.backstab and sp.backstab == 1 then
+			st1 = cappend(st1, "allows backstab")
+		end
+		if (sp.fire_shot_bow and sp.fire_shot_bow == 1) or (sp.fire_shot_xbow and sp.fire_shot_xbow == 1) then
+			st1 = cappend(st1, "allows fire shot")
+		end
+		if sp.goliath_bane and sp.goliath_bane == 1 then
+			st1 = cappend(st1, "allows goliath bane")
+		end
+		if (sp.remaining_ammo_thrown_heavy_blade and sp.remaining_ammo_thrown_heavy_blade == 1) or (sp.remaining_ammo_thrown_light_blade and sp.remaining_ammo_thrown_light_blade == 1) or (sp.remaining_ammo_javelin and sp.remaining_ammo_javelin == 1) or (sp.remaining_ammo_bow and sp.remaining_ammo_bow == 1) then
+			st1 = cappend(st1, "allows remaining ammo")
+		end
+		if sp.readied_bolt and sp.readied_bolt == 1 then
+			st1 = cappend(st1, "allows readied bolt")
+		end
+		if sp.ensnare and sp.ensnare == 1 then
+			st1 = cappend(st1, "allows ensnare")
+		end
+		if sp.slashdash and sp.slashdash == 1 then
+			st1 = cappend(st1, "allows slash+dash")
+		end
+		if sp.riposte and sp.riposte == 1 then
+			st1 = cappend(st1, "allows riposte")
+		end
+		if sp.storm and sp.storm == 1 then
+			st1 = cappend(st1, "allows storm")
+		end
+		if sp.cleave and sp.cleave == 1 then
+			st1 = cappend(st1, "allows cleave")
+		end
+		if sp.charge and sp.charge == 1 then
+			st1 = cappend(st1, "allows charge")
+		end
+		if sp.poison and sp.poison == 1 then
+			st1 = cappend(st1, "allows poisoning")
+		end
+	end
+	if wt.human_magic_adjust > 0 then
+		st1 = cappend(st1, string.format("%d%% to human magic", wt.human_magic_adjust))
+	end
+	if wt.dark_magic_adjust > 0 then
+		st1 = cappend(st1, string.format("%d%% to dark magic", wt.dark_magic_adjust))
+	end
+	if wt.faerie_magic_adjust > 0 then
+		st1 = cappend(st1, string.format("%d%% to faerie magic", wt.faerie_magic_adjust))
+	end
+	if wt.runic_magic_adjust > 0 then
+		st1 = cappend(st1, string.format("%d%% to runic magic", wt.runic_magic_adjust))
+	end
+	if wt.spirit_magic_adjust > 0 then
+		st1 = cappend(st1, string.format("%d%% to spirit magic", wt.spirit_magic_adjust))
+	end
+	if wt.body_damage_rate and wt.body_damage_rate > 0 then
+		st2 = string.format("%d%% body", wt.body_damage_rate)
+	end
+	if wt.deft_damage_rate and wt.deft_damage_rate > 0 then
+		st2 = cappend(st2, string.format("%d%% deft", wt.deft_damage_rate))
+	end
+	if wt.mind_damage_rate and wt.mind_damage_rate > 0 then
+		st2 = cappend(st2, string.format("%d%% mind", wt.mind_damage_rate))
+	end
+	st2 = lappend("Damage: ", st2)
+	if wt.body_number_rate and wt.body_number_rate > 0 then
+		st3 = string.format("%d%% body", wt.body_number_rate)
+	end
+	if wt.deft_number_rate and wt.deft_number_rate > 0 then
+		st3 = cappend(st3, string.format("%d%% deft", wt.deft_number_rate))
+	end
+	if wt.mind_number_rate and wt.mind_number_rate > 0 then
+		st3 = cappend(st3, string.format("%d%% mind", wt.mind_number_rate))
+	end
+	st3 = lappend("Strikes: ", st3)
+	st2 = sappend(st2, "; ", st3)
+	st1 = sappend(st1, "\n", st2)
+	st2 = ""
+	local pr = wml.get_child(wt, "prereq")
+	if pr then
+		if pr.body and pr.body > 0 then
+			st2 = string.format("%d body", pr.body)
+		end
+		if pr.deft and pr.deft > 0 then
+			st2 = cappend(st2, string.format("%d deft", pr.deft))
+		end
+		if pr.mind and pr.mind > 0 then
+			st2 = cappend(st2, string.format("%d mind", pr.mind))
+		end
+	end
+	st2 = lappend("Requires: ", st2)
+	if wt.class == "polearm" then
+		st1 = sappend(st1, "\n", st2)
+	else
+		st1 = sappend(st1, "; ", st2)
+	end
+	wt.special = st1
+	return wt
+end
+function wesnoth.wml_actions.adjust_weapon_description(args)
+	local var = string.match(args.variable, "[^%s]+") or H.wml_error("[adjust_weapon_description] requires a variable= key")
+	wml.variables[var] = adjustWeaponDescription(wml.variables[var])
+end
+
+local function adjustArmorDescription(at)
+	at.special = ""
+	if at.block_wield then
+		if at.block_wield == 1 then
+			at.special = "disallows triple wield"
+		elseif at.block_wield == 2 then
+			at.special = "disallows dual wield"
+		end
+	end
+	if at.block_ranged and at.block_ranged == 1 then
+		at.special = cappend(at.special, "disallows ranged weapon")
+	end
+	local sp = wml.get_child(at, "special_type")
+	if sp and sp.steadfast and sp.steadfast == 1 then
+		at.special = cappend(at.special, "allows steadfast")
+	end
+	return at
+end
+function wesnoth.wml_actions.adjust_armor_description(args)
+	local var = string.match(args.variable, "[^%s]+") or H.wml_error("[adjust_armor_description] requires a variable= key")
+	wml.variables[var] = adjustArmorDescription(wml.variables[var])
+end
+
 local function createWeapon(wtype, rank, attr, var)
 	if attr == "random" then
 		W.set_variable { name = "r_temp", rand = "rusty,unbalanced,none,none,none,none,none,none,heavy,sharp,light,balanced" }
@@ -2044,23 +2191,23 @@ function wesnoth.wml_actions.describe_item(cfg)
 		}
 
 -- 		if slot == "torso" then
-			std_print("\n" .. dump_lua_value({
-				path			= path,
-				cat				= cat,
-				arch_cat		= arch_cat,
-				slot			= slot,
-				nomrally_show	= nomrally_show_stat[slot],
-				item			= item,
-				stats			= stats,
-				tests = {
+-- 			std_print("\n" .. dump_lua_value({
+-- 				path			= path,
+-- 				cat				= cat,
+-- 				arch_cat		= arch_cat,
+-- 				slot			= slot,
+-- 				nomrally_show	= nomrally_show_stat[slot],
+-- 				item			= item,
+-- 				stats			= stats,
+-- 				tests = {
 -- 					type(item.terrain),
 -- 					item.terrain or "no",
 -- 					type(item.terrain[1]),
 -- 					item.terrain[1] or "no",
 -- 					item.terrain[1] and item.terrain[1].flat or "no",
 -- 					item.terrain and item.terrain[1].flat and item.terrain[1].flat[1].defense or "no"
-				}
-			}, "debug_stuff") .. "\n")
+-- 				}
+-- 			}, "debug_stuff") .. "\n")
 -- 		end
 
 -- 		local fuck =
@@ -2132,149 +2279,3 @@ function wesnoth.wml_actions.describe_item(cfg)
     end
 end
 
-
-function adjustWeaponDescription(wt)
-	if wt.evade_adjust and wt.evade_adjust ~= 0 then
-		wt.evade_description = string.format(", Evade Adjust: %s%d", (wt.evade_adjust > 0 and "+" or ""), wt.evade_adjust)
-	end
-	local st1, st2, st3 = "", "", ""
-	if wt.class == "thunderstick" then
-		st1 = "requires thunderstick tinker for upkeep and upgrade"
-	end
-	local sp = wml.get_child(wt, "special_type")
-	if sp then
-		if sp.throwable and sp.throwable == 1 then
-			st1 = cappend(st1, "throwable")
-		end
-		if sp.firststrike and sp.firststrike == 1 then
-			st1 = cappend(st1, "allows firststrike")
-		end
-		if sp.allow_poison and sp.allow_poison == 1 then
-			st1 = cappend(st1, "allows poisoning")
-		end
-		if sp.marksman and sp.marksman == 1 then
-			st1 = cappend(st1, "allows marksman")
-		end
-		if sp.backstab and sp.backstab == 1 then
-			st1 = cappend(st1, "allows backstab")
-		end
-		if (sp.fire_shot_bow and sp.fire_shot_bow == 1) or (sp.fire_shot_xbow and sp.fire_shot_xbow == 1) then
-			st1 = cappend(st1, "allows fire shot")
-		end
-		if sp.goliath_bane and sp.goliath_bane == 1 then
-			st1 = cappend(st1, "allows goliath bane")
-		end
-		if (sp.remaining_ammo_thrown_heavy_blade and sp.remaining_ammo_thrown_heavy_blade == 1) or (sp.remaining_ammo_thrown_light_blade and sp.remaining_ammo_thrown_light_blade == 1) or (sp.remaining_ammo_javelin and sp.remaining_ammo_javelin == 1) or (sp.remaining_ammo_bow and sp.remaining_ammo_bow == 1) then
-			st1 = cappend(st1, "allows remaining ammo")
-		end
-		if sp.readied_bolt and sp.readied_bolt == 1 then
-			st1 = cappend(st1, "allows readied bolt")
-		end
-		if sp.ensnare and sp.ensnare == 1 then
-			st1 = cappend(st1, "allows ensnare")
-		end
-		if sp.slashdash and sp.slashdash == 1 then
-			st1 = cappend(st1, "allows slash+dash")
-		end
-		if sp.riposte and sp.riposte == 1 then
-			st1 = cappend(st1, "allows riposte")
-		end
-		if sp.storm and sp.storm == 1 then
-			st1 = cappend(st1, "allows storm")
-		end
-		if sp.cleave and sp.cleave == 1 then
-			st1 = cappend(st1, "allows cleave")
-		end
-		if sp.charge and sp.charge == 1 then
-			st1 = cappend(st1, "allows charge")
-		end
-		if sp.poison and sp.poison == 1 then
-			st1 = cappend(st1, "allows poisoning")
-		end
-	end
-	if wt.human_magic_adjust > 0 then
-		st1 = cappend(st1, string.format("%d%% to human magic", wt.human_magic_adjust))
-	end
-	if wt.dark_magic_adjust > 0 then
-		st1 = cappend(st1, string.format("%d%% to dark magic", wt.dark_magic_adjust))
-	end
-	if wt.faerie_magic_adjust > 0 then
-		st1 = cappend(st1, string.format("%d%% to faerie magic", wt.faerie_magic_adjust))
-	end
-	if wt.runic_magic_adjust > 0 then
-		st1 = cappend(st1, string.format("%d%% to runic magic", wt.runic_magic_adjust))
-	end
-	if wt.spirit_magic_adjust > 0 then
-		st1 = cappend(st1, string.format("%d%% to spirit magic", wt.spirit_magic_adjust))
-	end
-	if wt.body_damage_rate and wt.body_damage_rate > 0 then
-		st2 = string.format("%d%% body", wt.body_damage_rate)
-	end
-	if wt.deft_damage_rate and wt.deft_damage_rate > 0 then
-		st2 = cappend(st2, string.format("%d%% deft", wt.deft_damage_rate))
-	end
-	if wt.mind_damage_rate and wt.mind_damage_rate > 0 then
-		st2 = cappend(st2, string.format("%d%% mind", wt.mind_damage_rate))
-	end
-	st2 = lappend("Damage: ", st2)
-	if wt.body_number_rate and wt.body_number_rate > 0 then
-		st3 = string.format("%d%% body", wt.body_number_rate)
-	end
-	if wt.deft_number_rate and wt.deft_number_rate > 0 then
-		st3 = cappend(st3, string.format("%d%% deft", wt.deft_number_rate))
-	end
-	if wt.mind_number_rate and wt.mind_number_rate > 0 then
-		st3 = cappend(st3, string.format("%d%% mind", wt.mind_number_rate))
-	end
-	st3 = lappend("Strikes: ", st3)
-	st2 = sappend(st2, "; ", st3)
-	st1 = sappend(st1, "\n", st2)
-	st2 = ""
-	local pr = wml.get_child(wt, "prereq")
-	if pr then
-		if pr.body and pr.body > 0 then
-			st2 = string.format("%d body", pr.body)
-		end
-		if pr.deft and pr.deft > 0 then
-			st2 = cappend(st2, string.format("%d deft", pr.deft))
-		end
-		if pr.mind and pr.mind > 0 then
-			st2 = cappend(st2, string.format("%d mind", pr.mind))
-		end
-	end
-	st2 = lappend("Requires: ", st2)
-	if wt.class == "polearm" then
-		st1 = sappend(st1, "\n", st2)
-	else
-		st1 = sappend(st1, "; ", st2)
-	end
-	wt.special = st1
-	return wt
-end
-function wesnoth.wml_actions.adjust_weapon_description(args)
-	local var = string.match(args.variable, "[^%s]+") or H.wml_error("[adjust_weapon_description] requires a variable= key")
-	wml.variables[var] = adjustWeaponDescription(wml.variables[var])
-end
-
-local function adjustArmorDescription(at)
-	at.special = ""
-	if at.block_wield then
-		if at.block_wield == 1 then
-			at.special = "disallows triple wield"
-		elseif at.block_wield == 2 then
-			at.special = "disallows dual wield"
-		end
-	end
-	if at.block_ranged and at.block_ranged == 1 then
-		at.special = cappend(at.special, "disallows ranged weapon")
-	end
-	local sp = wml.get_child(at, "special_type")
-	if sp and sp.steadfast and sp.steadfast == 1 then
-		at.special = cappend(at.special, "allows steadfast")
-	end
-	return at
-end
-function wesnoth.wml_actions.adjust_armor_description(args)
-	local var = string.match(args.variable, "[^%s]+") or H.wml_error("[adjust_armor_description] requires a variable= key")
-	wml.variables[var] = adjustArmorDescription(wml.variables[var])
-end
