@@ -1,9 +1,5 @@
 local _ = wesnoth.textdomain "wesnoth-Wesband"
 
-local function typeof(val)
-	return type(val)
-end
-
 local function lappend(l, st)
 	local res = ""
 	if #st > 0 then
