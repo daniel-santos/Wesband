@@ -231,3 +231,7 @@ function lua_table2wml(t)
 
 	return wml
 end
+
+local function typeof(val)
+	return type(val)
+end
