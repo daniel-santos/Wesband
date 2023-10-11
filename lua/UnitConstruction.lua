@@ -2979,3 +2979,45 @@ function wesnoth.wml_actions.set_default_abilities(cfg)
 		wml.variables[var] = unparse_container(v)
 	end
 end
+
+-- Converts a simpler container of key/value pairs into the terrain object the rest of Wesband expects.
+-- input:
+--     [terrain]
+--         flat=40,1
+--     [/terrain]
+-- output:
+--     [terrain]
+--         [flat]
+--             defense=40
+--             movemebnt=1
+--         [/flat]
+--     [/terrain]
+function wesnoth.wml_actions.unit_init_terrain(cfg)
+	local src_var = cfg.src
+	local dest = cfg.dest or H.wml_error("[unit_init_terrain] requires a dest= key")
+	local mode = cfg.mode or "replace"
+	local result = {}
+	local src, k, v
+
+	for k,v in ipairs(wml.parsed(cfg)) do
+		if type(v) == "table" and type(v[1]) == "string" and type(v[2]) == "table" and v[1] == "terrain" then
+			src = v[2]
+			break
+		end
+	end
+
+	if src_var and src then
+		H.wml_error("[unit_init_terrain] requires either a src= key or [terrain], but not both.")
+	elseif not (src_var or src) then
+		H.wml_error("[unit_init_terrain] requires either a src= key or [terrain].")
+	elseif src_var then
+		src = wml.variables[src_var]
+	end
+
+	for k,v in pairs(src) do
+		local arr = tostring(v):split(",")
+		local defense, movement = tonumber(arr[1]), tonumber(arr[2])
+		table.insert(result, {k, {defense = defense, movement = movement}})
+	end
+	wml.variables[dest] = result
+end
