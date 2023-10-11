@@ -1,15 +1,27 @@
+
+-- parse_container - convert a WML Lua container into a more Lua structure.
+-- The result will contain a pair of Lua tables for each level of the WML
+-- container:
+-- parsed.k = key/scalar-value pairs from the WML container
+-- parsed.c = key/container pairs from the WML container
 local function parse_container(wml)
 	local parsed
 	if not (type(wml) == "table") then
 		parsed = wml
 	else
+		-- parsed contains two tables named k and c
 		parsed = { k = {}, c = {} }
+		-- copy the key/value pair of each table in the wml into parsed.k
 		for k,v in pairs(wml) do
 			if not (type(v) == "table") then
 				parsed.k[k] = v
 			end
 		end
+
+		-- iterate through wml again
 		for i = 1, #wml do
+			-- convert all wml children that are tables/arrays into a valid
+			-- child in c (not to overlap with k namespace) into
 			if parsed.c[wml[i][1]] then
 				table.insert(parsed.c[wml[i][1]], parse_container(wml[i][2]))
 			else
@@ -19,6 +31,8 @@ local function parse_container(wml)
 	end
 	return parsed
 end
+
+-- unparse (the previously parsed) data back into a WML Lua container
 local function unparse_container(parsed)
 	local wml = {}
 	for k,v in pairs(parsed.k) do
@@ -31,6 +45,7 @@ local function unparse_container(parsed)
 	end
 	return wml
 end
+
 local function dcp(parsed, aflag)
 	local clone
 	if aflag then
