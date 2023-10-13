@@ -232,7 +232,7 @@ function dump_lua_value(node, name, indent_next, max_key_pad, allow_folding)
 	max_key_pad = max_key_pad or 24
 -- 	allow_folding = allow_folding ~= nil and allow_folding or false
 
-	local out = name .. " = " .. mnemonic_for_typeof(node) .. " "
+	local out = name .. " = " .. mnemonic_for_type(node) .. " "
 
 	if type(node) == "table" then
 		return out .. dump_lua_table(node, indent_next, max_key_pad)
@@ -294,9 +294,9 @@ function dump_lua_table(node, indent_next, max_key_pad, indent, allow_folding)
 			value = dump_lua_table(v, indent_next, max_key_pad, indent_body)
 			use_padding = false
 		elseif type(v) == "boolean" or type(v) == "number" or type(v) == "string" then
-			value = mnemonic_for_typeof(v) .. " " .. tostring(v)
+			value = mnemonic_for_type(v) .. " " .. tostring(v)
 		else
-			value = mnemonic_for_typeof(v) .. " (not displayed)"
+			value = mnemonic_for_type(v) .. " (not displayed)"
 		end
 
 		key_str = tostring(k)
