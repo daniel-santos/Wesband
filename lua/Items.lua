@@ -2074,7 +2074,6 @@ function wesnoth.wml_actions.describe_item(cfg)
 	local dest  = cfg.dest or H.wml_error("[describe_item] requires a dest= key")
 	local unit_var = cfg.unit
 	local mode = cfg.mode or "replace"
-	local cmd  = cfg.command
 	local wml_item = wesnoth.get_variable(item_var) or H.wml_error("cannot find variable " .. item_var)
 	local item = wml2lua_table(wml_item)
 -- 	local ench = wesnoth.get_variable(item_var .. ".enchantments")
@@ -2206,11 +2205,17 @@ function wesnoth.wml_actions.describe_item(cfg)
 		-- name - common variable name
 		-- val_cont - the value or a container that has it by name
 		local function gen(text, name, val_cont)
-			local value = val_cont and val_cont[name] or 0
-
-			if type(value) == "table" then
-				std_print("\n" .. dump_lua_value({name, val_cont, value}, "whoops"))
-				H.wml_error("whoops")
+			local value
+			if val_cont == nil then
+				value = 0
+			elseif type(val_cont) == "table" then
+				value = val_cont[name] or 0
+				if type(value) == "table" then
+					std_print("\n" .. dump_lua_value({name, val_cont, value}, "whoops"))
+					H.wml_error("whoops")
+				end
+			else
+				value = tonumber(val_cont) or 0
 			end
 
 			return {
@@ -2220,7 +2225,10 @@ function wesnoth.wml_actions.describe_item(cfg)
 				name
 			}
 		end
-		local flat_terrain = item.terrain and item.terrain[1].flat and item.terrain[1].flat[1] or nil
+
+-- 		local flat_terrain = item.terrain and item.terrain[1].flat and item.terrain[1].flat[1] or nil
+		local defense_adjust = item.terrain and item.terrain[1].flat and
+			  item.terrain[1].flat[1] and -item.terrain[1].flat[1].defense or 0
 		local stats = {
 			gen(_"arcane",		"arcane",			resistance),
 			gen(_"blade",		"blade",			resistance),
@@ -2231,8 +2239,8 @@ function wesnoth.wml_actions.describe_item(cfg)
 			gen(_"magic adj",	"magic_adjust",		item),
 			gen(_"ranged adj",	"ranged_adjust",	item),
 			gen(_"evade adj",	"evade_adjust",		item),
-			gen(_"def adj",		"defense",			flat_terrain),
-			gen(_"def adj",		"terrain_recoup",	item)
+			gen(_"def adj",		"defense_adjust",	defense_adjust + (item.terrain_recoup or 0))
+-- 			gen(_"def adj",		"terrain_recoup",	item)
 		}
 
 -- 		local stats = {
@@ -2257,6 +2265,8 @@ function wesnoth.wml_actions.describe_item(cfg)
 			-- Slot		show	show	show	show	show	show
 			--			res		magic	ranged	evade	defense	terrain
 			--					adjust	adjust	adjust	adjust	recoup
+			melee	 = {0,		0,		0,		1,		0,		0},
+			ranged	 = {0,		0,		0,		0,		0,		0},
 			shield	 = {0,		1,		1,		1,		0,		1},
 			head	 = {1,		0,		1,		1,		0,		0},
 			torso	 = {1,		1,		0,		1,		1,		0},
@@ -2318,7 +2328,7 @@ function wesnoth.wml_actions.describe_item(cfg)
 					normally_show	= normally_show,
 					have_stat		= have_stat,
 					show			= show,
-					flat_terrain	= flat_terrain
+					defense_adjust	= defense_adjust
 				}, "stuff", "  ", 24, "  "))
 			end
 
@@ -2355,13 +2365,7 @@ function wesnoth.wml_actions.describe_item(cfg)
 	if mode == "replace" then
 		wesnoth.set_variable(dest, result)
     elseif mode == "append" then
-        local value = wml.array_access.get(dest)
-        if not value then
-            value = {}
-        end
---         if not value[1] then
---             value[1] = {}
---         end
+        local value = wml.array_access.get(dest) or {}
         table.insert(value, result)
         wml.array_access.set(dest, value)
     else
@@ -3274,4 +3278,25 @@ function dump_weapon_table()
 		end
 		std_print(s)
 	end
+end
+
+function wesnoth.wml_conditionals.is_near_loot(cfg)
+	local x = cfg.x or H.wml_error("[is_near_loot] expects an x= attribute")
+	local y = cfg.y or H.wml_error("[is_near_loot] expects a y= attribute")
+	local r = cfg.radius or 1
+
+	for i,loc in ipairs(wesnoth.map.get_hexes_in_radius(x, y, r)) do
+		local var = string.format("ground.x%d.y%d.items.length", loc[1], loc[2])
+		local items = wesnoth.get_variable(var)
+		if items and items > 0 then
+			return true
+		end
+-- 		std_print("var = " .. var .. ", #items = " .. (items and tostring(#items) or "nil") .. (items and dump_lua_value(items, "items") or "items = nil"))
+	end
+	return false
+end
+
+wesnoth.game_events.on_mouse_move = function(x, y)
+	wesnoth.set_variable("mousey.x", x)
+	wesnoth.set_variable("mousey.y", y)
 end

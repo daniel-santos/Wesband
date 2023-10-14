@@ -129,21 +129,33 @@ function mnemonic_for_type(v)
     return mnemonics[type(v)] or "(" .. type(v) .. ")"
 end
 
+function dump_value(v)
+    local out = mnemonic_for_type(v) .. " "
+
+	if type(v) == "boolean" or type(v) == "number" then
+		return out .. tostring(v)
+	elseif type(v) == "string" then
+		return out .. "\"" .. v .. "\""
+    elseif v ~= nil then
+		return out .. tostring(v)
+    else
+        return out
+	end
+end
+
 -- dump a wml value
 function dump_wml_value(node, name, indent, indent_next, max_key_pad)
-	node = node or H.wml_error("dump_wml_value needs node")
+	node = node
 	name = name or "value"
 	indent = indent or ""
-	indent_next = indent_next or " "
+	indent_next = indent_next or "  "
 	max_key_pad = max_key_pad or 24
-    local out = name .. " = " .. mnemonic_for_type(node) .. " "
+    local out = name .. " = "
 
     if type(node) == "table" then
         return dump_wml_table(node, name, indent, indent_next, max_key_pad)
-    elseif type(node) == "boolean" or type(node) == "number" or type(node) == "string" then
-        return out .. node
     else
-        return out .. "(not dumped)"
+        return out .. dump_value(node)
     end
 end
 
@@ -205,12 +217,8 @@ function dump_wml_table(node, name, indent, indent_next, max_key_pad)
                 end
                 line = indent_body .. dump_wml_table(v, key_str, indent_body, indent_next, max_key_pad)
             else
-                line = indent_body .. string.format("%-" .. tostring(key_pad) .. "s", key_str) ..  " = " .. mnemonic_for_type(v) .. " "
-                if type(v) == "boolean" or type(v) == "number" or type(v) == "string" then
-                    line = line .. tostring(v)
-                else
-                    line = line .. "(not dumped)"
-                end
+                line = indent_body .. string.format("%-" .. tostring(key_pad) .. "s", key_str) ..
+                       " = " .. dump_value(v)
             end
             out = out .. (first and "" or "\n") .. line
             first = false
@@ -221,34 +229,36 @@ end
 
 function wesnoth.wml_actions.dump_wml(args)
 	local var = args.var or H.wml_error("[dump_wml] requires a var= key")
-	std_print("[dump_wml] var=" .. var .. dump_wml_value(wml.variables[var]))
+	std_print("[dump_wml]\n  " .. dump_wml_value(wml.variables[var], var, "  ") ..
+              "\n[/dump_wml]")
 end
 
 -- dump any lua value (doesn't show any userdata values, including translatable strings)
-function dump_lua_value(node, name, indent_next, max_key_pad, allow_folding)
-	node = node or H.wml_error("dump_lua_value needs node")
+function dump_lua_value(node, name, indent, indent_next, max_key_pad, allow_folding)
+	node = node
 	name = name or "value"
 	indent_next = indent_next or "  "
 	max_key_pad = max_key_pad or 24
--- 	allow_folding = allow_folding ~= nil and allow_folding or false
+	allow_folding = allow_folding ~= nil and allow_folding or false
 
 	local out = name .. " = " .. mnemonic_for_type(node) .. " "
 
 	if type(node) == "table" then
-		return out .. dump_lua_table(node, indent_next, max_key_pad)
-	elseif type(node) == "boolean" or type(node) == "number" or type(node) == "string" then
-		return out .. tostring(node)
-	else
-		return out .. "(not dumped)"
+		return out .. dump_lua_table(node, indent, indent_next, max_key_pad, allow_folding)
+    else
+        return out .. dump_value(node)
 	end
 end
 
-function dump_lua_table(node, indent_next, max_key_pad, indent, allow_folding)
+function dump_lua_table(node, indent, indent_next, max_key_pad, allow_folding)
 	node = node or H.wml_error("dump_lua_table() missing required node argument")
 	indent_next = indent_next or "  "
 	max_key_pad = max_key_pad or 24
 	indent = indent or ""
--- 	allow_folding = allow_folding ~= nil and allow_folding or false
+ 	allow_folding = allow_folding ~= nil and allow_folding or false
+ 	allow_folding = false -- broken right now
+
+ 	max_key_pad = tonumber(max_key_pad) -- wtf, Wesnoth Lua console?
 
 	if (type(node) ~= "table") then
 		error("node not a table: " .. tostring(node))
@@ -274,7 +284,7 @@ function dump_lua_table(node, indent_next, max_key_pad, indent, allow_folding)
 		nchildren = nchildren + 1
 	end
 	-- allow folding tables with less than two children
-	local do_folding = nchildren < 2 --  and allow_folding
+	local do_folding = nchildren < 2 and allow_folding
 
 	-- if array, we'll need two extra columns for []
 	if is_array then
@@ -284,19 +294,16 @@ function dump_lua_table(node, indent_next, max_key_pad, indent, allow_folding)
 	-- limit to max_key_pad
 	key_pad = key_pad < max_key_pad and key_pad or max_key_pad
 	local first = true
-	do_folding = false
 
 	for k, v in pairs(node) do
 		local value
 		local use_padding = not do_folding	-- we're not going to pad keys for tables or fold the table
 
 		if type(v) == "table" then
-			value = dump_lua_table(v, indent_next, max_key_pad, indent_body)
+			value = dump_lua_table(v, indent_body, indent_next, max_key_pad)
 			use_padding = false
-		elseif type(v) == "boolean" or type(v) == "number" or type(v) == "string" then
-			value = mnemonic_for_type(v) .. " " .. tostring(v)
-		else
-			value = mnemonic_for_type(v) .. " (not displayed)"
+        else
+            value = dump_value(v)
 		end
 
 		key_str = tostring(k)
@@ -313,7 +320,90 @@ function dump_lua_table(node, indent_next, max_key_pad, indent, allow_folding)
 	return out .. ((nchildren > 1 or not do_folding) and "\n" .. indent or "")  .. "}"
 end
 
+function dump(args, called_as)
+	called_as = called_as or "dump"
+	local tag_open  = "[" .. called_as .. "]"
+	local tag_close = "[/" .. called_as .. "]"
+	local var = args.var
+	local name = args.name
+	local value = args.value
+	local mode = args.mode or "wml"
+	local result
+
+	if not (var or value) then
+        H.wml_error(tag_open .. " requires either var= or value= attribute")
+	elseif var and value then
+        H.wml_error(tag_open .. " requires either var= or value= attribute, but not both.")
+    elseif var then
+        var = tostring(var)
+        value = wml.variables[var]
+        name = name or var
+    else
+        name = name or "value"
+    end
+
+    if type(mode) ~= "string" or not (mode == "wml" or mode == "lua") then
+        H.wml_error("[dump] received invalid mode= atrribute: " .. tostring(mode))
+    else if mode == "wml" then
+         result = dump_wml_value(value, name, "  ")
+    else
+         result = dump_lua_value(value, name, "  ")
+    end
+
+	std_print(tag_open .. "\n  " .. result .. "\n" .. tag_close)
+end
+
+-- [dump_lua]
+--     var   - name of a variable to dump (cannot use with value)
+--     value - a value to dump  (cannot use with var)
+--     name  - label to use for dumped value. Defaults to var or "value" depending on which input is used
+-- [/dump_lua]
+function wesnoth.wml_actions.dump(args)
+    return dump(args)
+
+	local var = args.var
+	local name = args.name
+	local value = args.value
+
+	if not (var or value) then
+        H.wml_error("[dump_lua] requires either var or value")
+	elseif var and value then
+        H.wml_error("[dump_lua] requires either var or value, but not both.")
+    elseif var then
+        value = wml.variables[var]
+        name = name or var
+    else
+        name = name or "value"
+    end
+
+
+
+	 or H.wml_error("[dump_lua] requires a var= key")
+	std_print("[dump_lua]\n  " .. dump_lua_value(wml.variables[var], var, "  ") .. "\n[/dump_lua]")
+end
+-- [dump_lua]
+--     var   - name of a variable to dump (cannot use with value)
+--     value - a value to dump  (cannot use with var)
+--     name  - label to use for dumped value. Defaults to var or "value" depending on which input is used
+-- [/dump_lua]
 function wesnoth.wml_actions.dump_lua(args)
-	local var = args.var or H.wml_error("[dump_lua] requires a var= key")
-	std_print("[dump_lua] var=" .. var .. dump_lua_value(wml.variables[var]))
+	local var = args.var
+	local name = args.name
+	local value = args.value
+
+	if not (var or value) then
+        H.wml_error("[dump_lua] requires either var or value")
+	elseif var and value then
+        H.wml_error("[dump_lua] requires either var or value, but not both.")
+    elseif var then
+        value = wml.variables[var]
+        name = name or var
+    else
+        name = name or "value"
+    end
+
+
+
+	 or H.wml_error("[dump_lua] requires a var= key")
+	std_print("[dump_lua]\n  " .. dump_lua_value(wml.variables[var], var, "  ") .. "\n[/dump_lua]")
 end

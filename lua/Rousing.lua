@@ -222,3 +222,10 @@ function wesnoth.wml_actions.check_safety(cfg)
 		wml.variables[v] = 0
 	end
 end
+
+function wesnoth.wml_conditionals.is_safe(cfg)
+	local x = cfg.x or H.wml_error("[is_safe] expects an x= attribute")
+	local y = cfg.y or H.wml_error("[is_safe] expects a y= attribute")
+
+	return checkSafety(x, y)
+end

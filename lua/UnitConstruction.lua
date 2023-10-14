@@ -1949,6 +1949,7 @@ local function constructUnit(var, unstore)
 			end
 			if storm_allowed and get_n(weapon, "special_type.storm") > 0 then
 				special_level = get_n(unit, "variables.abilities.storm")
+-- 				std_print(dump_lua_value(unit, "unit.variables.abilities"))
 			else
 				special_level = 0
 			end
