@@ -1,7 +1,7 @@
 H = wesnoth.require "lua/helper.lua"
 W = H.set_wml_action_metatable {}
 -- Define your global constants here.
-
+on_mouse_over={}
 
 --H.set_wml_var_metatable(_G)
 
@@ -281,3 +281,73 @@ local function typeof(val)
 	return type(val)
 end
 
+
+
+-- This takes it one step further than parse_container, but throws if you
+-- happen to have a scalar key that overlaps with a child container.
+function noarr_wml2lua_table(wml)
+	if not (type(wml) == "table") then
+		return wml
+	end
+	local result = {}
+	local k, v
+
+	-- first copy the scalars in, because that's the easy part.
+	for k, v in pairs(wml) do
+		if type(v) ~= "table" then
+			result[k] = v
+		end
+	end
+
+	for k, v in pairs(wml) do
+		if type(v) == "table" then
+			local key = v[1]
+			if result[key] ~= nil then
+				local reason
+				if type(result[key]) == "table" then
+					reason = "is an array"
+				else
+					reason = "maps to both a scalar and a container"
+				end
+				H.wml_error(string.format("Cannot use noarr_wml2lua_table on this WML container " ..
+						    "because the key %s %s, though" ..
+							"this is valid WML.", key, reason))
+			end
+			result[key] = noarr_wml2lua_table(v[2])
+		end
+	end
+
+	return result
+end
+
+function noarr_lua_table2wml(t)
+	if type(t) ~= "table" then
+		H.wml_error(string.format("not a table"))
+	end
+	local wml = {}
+	local k, v
+
+	for k, v in pairs(t) do
+		if type(v) ~= "table" then
+			wml[k] = v
+		else
+			table.insert(wml, {k , {1, noarr_lua_table2wml(v)}})
+		end
+	end
+
+	return wml
+end
+
+-- function wesnoth.wml_actions.register_mouse_over_wml(args)
+-- 	local tag = args.tag or H.wml_error("[register_mouse_over_wml] requires tag=")
+-- 	local cmd
+--
+-- 	local k, v
+-- 	for k, v in pairs(wml.parsed(args)) do
+-- 		if type(v) == "table" and type(v[1]) == "string" and v[1] == "command" and type(v[2]) == "table" then
+-- 			cmd = v[2]
+-- 		end
+-- 	end
+--
+--
+-- end

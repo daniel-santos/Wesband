@@ -3297,6 +3297,7 @@ function wesnoth.wml_conditionals.is_near_loot(cfg)
 end
 
 wesnoth.game_events.on_mouse_move = function(x, y)
-	wesnoth.set_variable("mousey.x", x)
-	wesnoth.set_variable("mousey.y", y)
+	wesnoth.set_variable("x1", x)
+	wesnoth.set_variable("x2", y)
+	wesnoth.fire_event("setup_loot_safe")
 end
