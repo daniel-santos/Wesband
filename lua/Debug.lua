@@ -227,12 +227,6 @@ function dump_wml_table(node, name, indent, indent_next, max_key_pad)
     return out .. "\n" .. indent .. "[/" .. tostring(name) .. "]"
 end
 
-function wesnoth.wml_actions.dump_wml(args)
-	local var = args.var or H.wml_error("[dump_wml] requires a var= key")
-	std_print("[dump_wml]\n  " .. dump_wml_value(wml.variables[var], var, "  ") ..
-              "\n[/dump_wml]")
-end
-
 -- dump any lua value (doesn't show any userdata values, including translatable strings)
 function dump_lua_value(node, name, indent, indent_next, max_key_pad, allow_folding)
 	node = node
@@ -327,7 +321,7 @@ function dump(args, called_as)
 	local var = args.var
 	local name = args.name
 	local value = args.value
-	local mode = args.mode or "wml"
+	local mode = args.mode and tostring(mode) or "wml"
 	local result
 
 	if not (var or value) then
@@ -342,68 +336,56 @@ function dump(args, called_as)
         name = name or "value"
     end
 
-    if type(mode) ~= "string" or not (mode == "wml" or mode == "lua") then
-        H.wml_error("[dump] received invalid mode= atrribute: " .. tostring(mode))
-    else if mode == "wml" then
-         result = dump_wml_value(value, name, "  ")
+    if mode == "wml" then
+        result = dump_wml_value(value, name, "  ")
     else
-         result = dump_lua_value(value, name, "  ")
+        local lua
+        if mode == "lua" then
+            lua = value
+        elseif mode == "parsed_lua" then
+            lua = parse_container(value)
+        elseif mode == "wml2lua" then
+            lua = wml2lua_table(value)
+        else
+            H.wml_error("[dump] received invalid mode= atrribute: " .. mode)
+        end
+
+        result = dump_lua_value(lua, name, "  ")
     end
 
 	std_print(tag_open .. "\n  " .. result .. "\n" .. tag_close)
 end
 
--- [dump_lua]
+-- [dump]
 --     var   - name of a variable to dump (cannot use with value)
 --     value - a value to dump  (cannot use with var)
 --     name  - label to use for dumped value. Defaults to var or "value" depending on which input is used
--- [/dump_lua]
+--     mode  - "wml", "lua", "parsed_lua", or "wml2lua" (defaults to "wml")
+-- [/dump]
+-- "wtf is iparsed_luai and iwml2luai you ask?" Some lua code uses parse_container()
+-- to simplify accessing complex wml values and other code uses a slight variant, wml2lua_table()
 function wesnoth.wml_actions.dump(args)
     return dump(args)
-
-	local var = args.var
-	local name = args.name
-	local value = args.value
-
-	if not (var or value) then
-        H.wml_error("[dump_lua] requires either var or value")
-	elseif var and value then
-        H.wml_error("[dump_lua] requires either var or value, but not both.")
-    elseif var then
-        value = wml.variables[var]
-        name = name or var
-    else
-        name = name or "value"
-    end
-
-
-
-	 or H.wml_error("[dump_lua] requires a var= key")
-	std_print("[dump_lua]\n  " .. dump_lua_value(wml.variables[var], var, "  ") .. "\n[/dump_lua]")
 end
+
+-- alias for [dump] mode=wml [/dump]
+-- [dump_wml]
+--     var   - name of a variable to dump (cannot use with value)
+--     value - a value to dump  (cannot use with var)
+--     name  - label to use for dumped value. Defaults to var or "value" depending on which input is used
+-- [/dump_wml]
+function wesnoth.wml_actions.dump_wml(args)
+    args.mode = "wml"
+    return dump(args, "dump_wml")
+end
+
+-- alias for [dump] mode=lua [/dump]
 -- [dump_lua]
 --     var   - name of a variable to dump (cannot use with value)
 --     value - a value to dump  (cannot use with var)
 --     name  - label to use for dumped value. Defaults to var or "value" depending on which input is used
 -- [/dump_lua]
 function wesnoth.wml_actions.dump_lua(args)
-	local var = args.var
-	local name = args.name
-	local value = args.value
-
-	if not (var or value) then
-        H.wml_error("[dump_lua] requires either var or value")
-	elseif var and value then
-        H.wml_error("[dump_lua] requires either var or value, but not both.")
-    elseif var then
-        value = wml.variables[var]
-        name = name or var
-    else
-        name = name or "value"
-    end
-
-
-
-	 or H.wml_error("[dump_lua] requires a var= key")
-	std_print("[dump_lua]\n  " .. dump_lua_value(wml.variables[var], var, "  ") .. "\n[/dump_lua]")
+    args.mode = "lua"
+    return dump(args, "dump_lua")
 end
