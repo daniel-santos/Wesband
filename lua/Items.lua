@@ -2085,7 +2085,9 @@ function wesnoth.wml_actions.describe_item(cfg)
 	local name = item.name
 	local icon = item.icon
 	local arch_cat, slot
-	local i
+	local i, j
+	local tranditional_stats = wesnoth.get_variable("opts.trad_stats")
+	if tranditional_stats == nil then tranditional_stats = true end
 
 	desc = ench_stat(ench and ench.power > 0, desc) .. "\n"
 
@@ -2195,15 +2197,6 @@ function wesnoth.wml_actions.describe_item(cfg)
 
 	elseif arch_cat == "armor" then
 		desc = desc .. "<small><small>"
-		std_print(dump_lua_table({
-			cat				= cat,
-			arch_cat		= arch_cat,
-			slot			= slot,
-			item_var		= item_var,
-			unit_var		= unit_var,
-			resistance		= resistance,
-			item			= item
-		}))
 
 -- 		std_print(dump_value(cfg, "describe_item"))
 -- 		std_print(dump_value(resistance, "item.resistance", "", "  ", 24) .. "\n")
@@ -2227,6 +2220,7 @@ function wesnoth.wml_actions.describe_item(cfg)
 				name
 			}
 		end
+		local flat_terrain = item.terrain and item.terrain[1].flat and item.terrain[1].flat[1] or nil
 		local stats = {
 			gen(_"arcane",		"arcane",			resistance),
 			gen(_"blade",		"blade",			resistance),
@@ -2237,7 +2231,7 @@ function wesnoth.wml_actions.describe_item(cfg)
 			gen(_"magic adj",	"magic_adjust",		item),
 			gen(_"ranged adj",	"ranged_adjust",	item),
 			gen(_"evade adj",	"evade_adjust",		item),
-			gen(_"def adj",		"defense_adjust",	item.terrain and item.terrain[1].flat and item.terrain[1].flat[1]),
+			gen(_"def adj",		"defense",			flat_terrain),
 			gen(_"def adj",		"terrain_recoup",	item)
 		}
 
@@ -2261,7 +2255,7 @@ function wesnoth.wml_actions.describe_item(cfg)
 		-- armor slot that's non-tranditional if it's been magically modified.
 		local nomrally_show_stat = {
 			-- Slot		show	show	show	show	show	show
-			--			res		magic	ranged	evade	defense	defense
+			--			res		magic	ranged	evade	defense	terrain
 			--					adjust	adjust	adjust	adjust	recoup
 			shield	 = {0,		1,		1,		1,		0,		1},
 			head	 = {1,		0,		1,		1,		0,		0},
@@ -2269,6 +2263,20 @@ function wesnoth.wml_actions.describe_item(cfg)
 			legs	 = {1,		1,		0,		1,		1,		0},
 		}
 
+-- 		-- Convert to boolean
+-- 		for k, v in pairs(nomrally_show_stat) do
+-- 			for i = 1, #nomrally_show_stat[k] do
+-- 				nomrally_show_stat[k][i] = nomrally_show_stat[k][i] == 1
+-- 			end
+-- 		end
+-- 		local traditional_order = {
+-- 			-- Slot		magic	ranged	evade	defense	terrain
+-- 			--			adjust	adjust	adjust	adjust	recoup
+-- 			shield	 = {1,		1,		1,		0,		1},
+-- 			head	 = {0,		1,		1,		0,		0},
+-- 			torso	 = {1,		0,		1,		1,		0},
+-- 			legs	 = {1,		0,		1,		1,		0},
+-- 		}
 -- 		if slot == "torso" then
 -- 			std_print("\n" .. dump_lua_value({
 -- 				item_var		= item_var,
@@ -2293,23 +2301,26 @@ function wesnoth.wml_actions.describe_item(cfg)
 		local delimit = false
 		for i = 1, #stats do
 			-- We lump all resistances together into stat category 1
-			local stat_cat = i < 7 and 1 or i - 6
-			local normally_hide = nomrally_show_stat[slot][stat_cat] == 0
+			local stat_cat = i < 7 and 1 or i - 5
+			local normally_show = nomrally_show_stat[slot][stat_cat] > 0 and tranditional_stats
 			local have_stat = stats[i][2] and stats[i][2] ~= 0
-			local show = not normally_hide or have_stat
+			local show = normally_show or have_stat
 
--- 			if slot == "shield" then
--- 				std_print(dump_lua_table({
--- 					stat			= i,
--- 					stat_cat		= stat_cat,
--- 					show_from_table = nomrally_show_stat[slot][stat_cat],
--- 					inverted		= not nomrally_show_stat[slot][stat_cat],
--- 					table_again		= nomrally_show_stat[slot],
--- 					normally_hide	= normally_hide,
--- 					have_stat		= have_stat,
--- 					show			= show,
--- 				}))
--- 			end
+			if slot == "torso" then
+				std_print(dump_lua_value({
+					stat			= i,
+					slot			= slot,
+					stat_cat		= stat_cat,
+					stat_name		= tostring(stats[i][1]),
+					show_from_table = nomrally_show_stat[slot][stat_cat],
+					inverted		= not nomrally_show_stat[slot][stat_cat],
+					table_again		= nomrally_show_stat[slot],
+					normally_show	= normally_show,
+					have_stat		= have_stat,
+					show			= show,
+					flat_terrain	= flat_terrain
+				}, "stuff", "  ", 24, "  "))
+			end
 
 			if show then
                 local stat
