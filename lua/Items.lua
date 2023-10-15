@@ -1974,6 +1974,8 @@ function wesnoth.wml_actions.item_cleanup(cfg)
 	local x = cfg.x or H.wml_error("[item_cleanup] requires an x= key")
 	local y = cfg.y or H.wml_error("[item_cleanup] requires a y= key")
 	local ix = cfg.index
+	x = tonumber(x)
+	y = tonumber(y)
 	if type(ix) ~= "number" then
 		ix = -1
 	end
@@ -2329,7 +2331,7 @@ function wesnoth.wml_actions.describe_item(cfg)
 					have_stat		= have_stat,
 					show			= show,
 					defense_adjust	= defense_adjust
-				}, "stuff", "  ", 24, "  "))
+				}, "stuff", "  "))
 			end
 
 			if show then
@@ -3283,11 +3285,13 @@ end
 function wesnoth.wml_conditionals.is_near_loot(cfg)
 	local x = cfg.x or H.wml_error("[is_near_loot] expects an x= attribute")
 	local y = cfg.y or H.wml_error("[is_near_loot] expects a y= attribute")
-	local r = cfg.radius or 1
+	local r = cfg.radius and tonumber(cfg.radius) or 1
+	local locs = wesnoth.map.get_hexes_in_radius(x, y, r) or {}
+	table.insert(locs, {x, y})
 
-	for i,loc in ipairs(wesnoth.map.get_hexes_in_radius(x, y, r)) do
+	for i,loc in ipairs(locs) do
 		local var = string.format("ground.x%d.y%d.items.length", loc[1], loc[2])
-		local items = wesnoth.get_variable(var)
+		local items = wml.variables[var]
 		if items and items > 0 then
 			return true
 		end
@@ -3297,7 +3301,73 @@ function wesnoth.wml_conditionals.is_near_loot(cfg)
 end
 
 wesnoth.game_events.on_mouse_move = function(x, y)
-	wesnoth.set_variable("x1", x)
-	wesnoth.set_variable("x2", y)
-	wesnoth.fire_event("setup_loot_safe")
+-- 	local unit =  wesnoth.units.get(x, y)
+	local i, j, loc
+	local gold, nitems = 0, 0
+	local nearby_items
+	local is_safe = checkSafety(x, y)
+	local loot_radius = is_safe and 1 or 0
+
+	-- won't manage grammar, but oh well
+	local noun_gold = _"gold"
+	local noun_item_singular = _"item"
+	local noun_item_plural = _"items"
+	local conjugation_and = _"and"
+	local adj_nearby = _"nearby"
+
+	if x < 1 or y < 1 then return end
+-- 	std_print(dump_lua_value(unit, "unit"))
+-- 	if not unit or not unit.canrecruit then return end
+	local locs = {}
+	if is_safe then
+		locs = wesnoth.map.get_hexes_in_radius(x, y, loot_radius)
+	end
+
+	table.insert(locs, {x, y})
+-- 	std_print(dump_lua_value(locs, "locs"))
+
+	for i,loc in ipairs(locs) do
+		local items_var = string.format("ground.x%d.y%d.items", loc[1], loc[2])
+		local count = wml.variables[items_var .. ".length"]
+		local items = wml.array_access.get(items_var)
+		if count and count > 0 then
+-- 			std_print(dump_lua_value({items_var = items_var, count = count, items = items}, "item_info"))
+			for k, v in pairs(items) do
+				local item = v
+-- 				std_print(dump_lua_value({k = k, v = v, cat = v.category}))
+-- 				local var = items .. "[" .. tostring(j) .. "]"
+-- 				local item = wml.parsed(wml.variables[var])
+-- 				local item = items[j]
+-- 				std_print(dump_lua_value(item, items_var .. "[" .. tostring(j) .. "]"))
+				if item and item.category then
+					if item.category == "gold" then
+						gold = gold + item.amount
+-- 						std_print(dump_lua_value(gold, "gold"))
+					else
+						nitems = nitems + 1
+-- 						std_print(dump_lua_value(nitems, "nitems"))
+					end
+				end
+			end
+		end
+-- 		std_print("var = " .. var .. ", #items = " .. (items and tostring(#items) or "nil") .. (items and dump_lua_value(items, "items") or "items = nil"))
+	end
+
+	if gold > 0 then
+		nearby_items = tostring(gold) .. " " .. noun_gold
+	end
+	if nitems > 0 then
+		nearby_items = (nearby_items and nearby_items .. ", " .. conjugation_and .. " " or "") ..
+					   tostring(nitems) .. " " .. (nitems > 1 and noun_item_plural or noun_item_singular) ..
+					   (is_safe and " " .. adj_nearby or "")
+	end
+-- 	std_print(dump_lua_value(nearby_items, "nearby_items"))
+
+-- 	wesnoth.set_variable("gooey", gooey)
+	if nearby_items then
+		wml.variables.menu = {}
+		wml.variables.loot_radius = loot_radius
+		wml.variables.nearby_items = nearby_items
+		wesnoth.fire_event("setup_loot_menu")
+	end
 end

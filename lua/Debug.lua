@@ -252,8 +252,6 @@ function dump_lua_table(node, indent, indent_next, max_key_pad, allow_folding)
 	allow_folding = allow_folding ~= nil and allow_folding or false
 	allow_folding = false -- broken right now
 
-	max_key_pad = tonumber(max_key_pad) -- wtf, Wesnoth Lua console?
-
 	if (type(node) ~= "table") then
 		error("node not a table: " .. tostring(node))
 	end

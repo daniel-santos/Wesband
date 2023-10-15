@@ -1,4 +1,4 @@
-local function checkSafety(x, y)
+function checkSafety(x, y)
 	local rouse_list = wml.variables["rouse_list"]
 	local safety
 	if rouse_list then
