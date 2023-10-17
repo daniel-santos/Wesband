@@ -852,8 +852,73 @@ local function constructUnit(var, unstore)
 		set_p(unit, "max_moves", math.floor(get_n(unit, "variables.max_moves") * math.min(1, 1 + evade * 0.01)))
 	end
 	set_p(unit, "moves", math.min(get_n(unit, "moves"), get_n(unit, "max_moves")))
-	local function set_resist(resist)
-		set_p(unit, "resistance." .. resist, math.max(0, get_n(unit, "variables.resistance." .. resist, 100)) - get_n(equipment.head_armor, "resistance." .. resist) - get_n(equipment.torso_armor, "resistance." .. resist) - get_n(equipment.leg_armor, "resistance." .. resist))
+
+	local function calculate_vulnerability(damage_type)
+		local i
+		local bonus, penalty, deduct = 0, 0, 0
+		local vul = math.max(0, get_n(unit, "variables.resistance." .. damage_type, 100)) / 100
+		local equip = {
+-- 			{mult = 1, pct = 0, value = get_n(equipment.melee_1,     "resistance." .. damage_type) / 100},
+-- 			{mult = 1, pct = 0, value = get_n(equipment.melee_2,     "resistance." .. damage_type) / 100},
+-- 			{mult = 1, pct = 0, value = get_n(equipment.melee_3,     "resistance." .. damage_type) / 100},
+-- 			{mult = 1, pct = 0, value = get_n(equipment.ranged,      "resistance." .. damage_type) / 100},
+			{mult = 1, pct = 0, value = get_n(equipment.torso_armor, "resistance." .. damage_type) / 100},
+			{mult = 1, pct = 0, value = get_n(equipment.head_armor,  "resistance." .. damage_type) / 100},
+			{mult = 1, pct = 0, value = get_n(equipment.leg_armor,   "resistance." .. damage_type) / 100},
+			{mult = 1, pct = 0, value = get_n(equipment.shield,      "resistance." .. damage_type) / 100},
+		}
+		for i = 1, #equip do
+			if equip[i].value > 0 then
+				bonus = bonus + equip[i].value
+			else
+				penalty = penalty + equip[i].value
+			end
+		end
+
+		-- Add the penalty to the base vulnerability
+		vul = vul - penalty
+
+		-- If we don't get down to at least 100% (i.e., negative resistance) then just
+		-- return with that value
+		if vul - bonus >= 1 then
+			return vul - bonus
+		end
+
+		-- If net vulnerability (after equipment penalties) is > 100%, then we split it up into
+		-- a "deduct" value, which will be subtracted from resists, and set vulnerability to
+		-- 100%, which will be fractionally mitigated by equipment resists.
+		if vul > 1 then
+			deduct = vul - 1
+			vul = 1
+		end
+
+		-- Determine the percentage of the total bonus that each piece is contributing
+		for i = 1, #equip do
+			if equip[i].value > 0 then
+				equip[i].pct = equip[i].value / bonus
+			end
+		end
+
+		for i = 1, #equip do
+			-- Note that we don't need to check for items with penalties, because those will have zero pct.
+
+			-- This calculates how much this piece of armor will reduce vulnerability
+			local multiplier = 1 - equip[i].value + deduct * equip[i].pct
+			-- Any piece that ends up over 100% here means we are invulnerable
+			if multiplier < 0 then
+				return 0
+			end
+			equip[i].mult = multiplier
+			vul = vul * multiplier
+		end
+-- 		std_print(dump_lua_value({vul, bonus, penalty, deduct, equip}, damage_type))
+		return vul
+	end
+
+	local function set_resist(damage_type)
+		local value = calculate_vulnerability(damage_type) * 100
+-- 		std_print(dump_lua_value(value, damage_type))
+		set_p(unit, "resistance." .. damage_type, value)
 	end
 	set_resist("arcane")
 	set_resist("blade")
