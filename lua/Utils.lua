@@ -1,4 +1,5 @@
 H = wesnoth.require "lua/helper.lua"
+-- W = wml.fire
 W = H.set_wml_action_metatable {}
 -- Define your global constants here.
 on_mouse_over={}

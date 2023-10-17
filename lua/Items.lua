@@ -2319,19 +2319,19 @@ function wesnoth.wml_actions.describe_item(cfg)
 			local show = normally_show or have_stat
 
 			if slot == "torso" then
-				std_print(dump_lua_value({
-					stat			= i,
-					slot			= slot,
-					stat_cat		= stat_cat,
-					stat_name		= tostring(stats[i][1]),
-					show_from_table = nomrally_show_stat[slot][stat_cat],
-					inverted		= not nomrally_show_stat[slot][stat_cat],
-					table_again		= nomrally_show_stat[slot],
-					normally_show	= normally_show,
-					have_stat		= have_stat,
-					show			= show,
-					defense_adjust	= defense_adjust
-				}, "stuff", "  "))
+-- 				std_print(dump_lua_value({
+-- 					stat			= i,
+-- 					slot			= slot,
+-- 					stat_cat		= stat_cat,
+-- 					stat_name		= tostring(stats[i][1]),
+-- 					show_from_table = nomrally_show_stat[slot][stat_cat],
+-- 					inverted		= not nomrally_show_stat[slot][stat_cat],
+-- 					table_again		= nomrally_show_stat[slot],
+-- 					normally_show	= normally_show,
+-- 					have_stat		= have_stat,
+-- 					show			= show,
+-- 					defense_adjust	= defense_adjust
+-- 				}, "stuff", "  "))
 			end
 
 			if show then
@@ -3300,7 +3300,7 @@ function wesnoth.wml_conditionals.is_near_loot(cfg)
 	return false
 end
 
-wesnoth.game_events.on_mouse_move = function(x, y)
+function update_loot_menu(x, y)
 -- 	local unit =  wesnoth.units.get(x, y)
 	local i, j, loc
 	local gold, nitems = 0, 0
@@ -3361,13 +3361,28 @@ wesnoth.game_events.on_mouse_move = function(x, y)
 					   tostring(nitems) .. " " .. (nitems > 1 and noun_item_plural or noun_item_singular) ..
 					   (is_safe and " " .. adj_nearby or "")
 	end
--- 	std_print(dump_lua_value(nearby_items, "nearby_items"))
+-- 	std_print("nearby_items: " .. nearby_items)
+	std_print(dump_lua_value(nearby_items, "nearby_items"))
 
 -- 	wesnoth.set_variable("gooey", gooey)
 	if nearby_items then
 		wml.variables.menu = {}
 		wml.variables.loot_radius = loot_radius
 		wml.variables.nearby_items = nearby_items
-		wesnoth.fire_event("setup_loot_menu")
+		wesnoth.fire_event("setup_loot_menu", {x, y})
+-- 		wesnoth.game_events.fire("setup_loot_menu", {x, y})
 	end
 end
+
+wesnoth.game_events.on_mouse_move = function(x, y)
+	update_loot_menu(x, y)
+end
+
+wesnoth.game_events.on_mouse_button = function(x, y, button, event)
+	std_print(string.format("on_mouse_button %d,%d %s %s", x, y, button, event))
+	if button == "right" and event == "click" then
+		update_loot_menu(x, y)
+	end
+	return false
+end
+

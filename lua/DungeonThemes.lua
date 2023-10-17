@@ -79,13 +79,17 @@ if wml.variables['dungeon_creation.temp.terrain_variation'] == "Wwf" then
 		})
 		wml.variables['dungeon_creation.water_level_counter'] = 0
 	end
-elseif wml.variables['dungeon_creation.temp.terrain_variation'] == "Rd" or wml.variables['dungeon_creation.temp.terrain_variation'] == "Re" or wml.variables['dungeon_creation.temp.terrain_variation'] == "Ryc" then
+elseif wml.variables['dungeon_creation.temp.terrain_variation'] == "Rd" or
+	   wml.variables['dungeon_creation.temp.terrain_variation'] == "Re" or
+	   wml.variables['dungeon_creation.temp.terrain_variation'] == "Ryc" then
 	wesnoth.wml_actions.set_prob({
 		name = "dungeon_creation.temp.prob_list",
 		item = "outlaws",
 		weight = 100,
 		op = "add"
 	})
+elseif wml.variables['dungeon_creation.temp.terrain_variation'] == "Ri" then
+elseif wml.variables['dungeon_creation.temp.terrain_variation'] == "F" then
 end
 wesnoth.wml_actions.get_prob({
 	variable = "dungeon_creation.temp.creep_themes[0].theme",
@@ -136,7 +140,9 @@ else
 			terrain = "Ai",
 			variable = "terrain_match"
 		}
-	if wml.variables['dungeon_creation.temp.terrain_variation'] == "Wwf" or (wml.variables['dungeon_creation.temp.flow_flavor'] == "" and wml.variables['dungeon_creation.temp.flow_type'] < 11) or wml.variables['terrain_match'] then
+	if wml.variables['dungeon_creation.temp.terrain_variation'] == "Wwf" or
+			(wml.variables['dungeon_creation.temp.flow_flavor'] == "" and wml.variables['dungeon_creation.temp.flow_type'] < 11) or
+			wml.variables['terrain_match'] then
 		--W.set_variable { name = "dungeon_creation.temp.water_theme_position", rand = "2..$($const.max_enemy_count-1)" }
 		W.set_variable { name = "dungeon_creation.temp.water_theme_position", rand = string.format("2..%d", wml.variables['const.max_enemy_count'] -1) }
 		wesnoth.wml_actions.set_prob({
