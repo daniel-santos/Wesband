@@ -3319,7 +3319,7 @@ function update_loot_menu(x, y)
 		_"Pick up %d gold and %d items nearby"
 	}
 
-	if x < 1 or y < 1 then return end
+	if x < 1 or y < 1 or x > 500 or y > 500 then return end
 -- 	std_print(dump_lua_value(unit, "unit"))
 -- 	if not unit or not unit.canrecruit then return end
 	local locs = {}
