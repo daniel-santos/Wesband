@@ -3308,12 +3308,16 @@ function update_loot_menu(x, y)
 	local is_safe = checkSafety(x, y)
 	local loot_radius = is_safe and 1 or 0
 
-	-- won't manage grammar, but oh well
-	local noun_gold = _"gold"
-	local noun_item_singular = _"item"
-	local noun_item_plural = _"items"
-	local conjugation_and = _"and"
-	local adj_nearby = _"nearby"
+	local msgs = {
+		_"",
+		_"",
+		_"Pick up %d gold",
+		_"Pick up %d gold nearby",
+		_"Pick up %d items",
+		_"Pick up %d items nearby",
+		_"Pick up %d gold and %d items",
+		_"Pick up %d gold and %d items nearby"
+	}
 
 	if x < 1 or y < 1 then return end
 -- 	std_print(dump_lua_value(unit, "unit"))
@@ -3353,23 +3357,29 @@ function update_loot_menu(x, y)
 -- 		std_print("var = " .. var .. ", #items = " .. (items and tostring(#items) or "nil") .. (items and dump_lua_value(items, "items") or "items = nil"))
 	end
 
-	if gold > 0 then
-		nearby_items = tostring(gold) .. " " .. noun_gold
+	if gold + nitems == 0 then
+		return
 	end
-	if nitems > 0 then
-		nearby_items = (nearby_items and nearby_items .. ", " .. conjugation_and .. " " or "") ..
-					   tostring(nitems) .. " " .. (nitems > 1 and noun_item_plural or noun_item_singular) ..
-					   (is_safe and " " .. adj_nearby or "")
+
+	local msgs_index = 1 + loot_radius + (gold > 0 and 2 or 0) + (nitems > 0 and 4 or 0)
+
+	if msgs_index < 5 then
+		nearby_items = string.format(msgs[msgs_index], gold)
+	elseif msgs_index < 7 then
+		nearby_items = string.format(msgs[msgs_index], nitems)
+	else
+		nearby_items = string.format(msgs[msgs_index], gold, nitems)
 	end
+
 -- 	std_print("nearby_items: " .. nearby_items)
 	std_print(dump_lua_value(nearby_items, "nearby_items"))
 
--- 	wesnoth.set_variable("gooey", gooey)
 	if nearby_items then
 		wml.variables.menu = {}
 		wml.variables.loot_radius = loot_radius
 		wml.variables.nearby_items = nearby_items
 		wesnoth.fire_event("setup_loot_menu", {x, y})
+		-- Wesnoth 1.17?
 -- 		wesnoth.game_events.fire("setup_loot_menu", {x, y})
 	end
 end
