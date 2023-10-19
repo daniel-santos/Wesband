@@ -1,45 +1,100 @@
 -- these are global functions for ease of use in lua scripts as well as WML
+-- function wesnoth.wml_actions.hello(cfg)
+--     local msg = cfg.msg or "world"
+--     local literal = cfg.literal or "literal world"
+--     gui.show_popup("hello", literal .. " " .. msg)
+-- end
+
 function wesnoth.wml_actions.prob_list2(cfg)
-	local list = cfg.name or H.wml_error("[prob_list] requires a name= key")
-	local items = cfg.items or H.wml_error("[prob_list] requires a items= key")
-	local weights = cfg.weights or H.wml_error("[prob_list] requires a weights= key")
-	local mods = cfg.weights or ""
+	local list = cfg.name or H.wml_error("[prob_list2] requires a name= key")
+	local items = cfg.items or H.wml_error("[prob_list2] requires a items= key")
+	local weights = wml.literal(cfg).weights or H.wml_error("[prob_list2] requires a weights= key")
+	local late = cfg.late or false
+	local mods = cfg.mods and wml.literal(cfg).mods or ""
+	local delim
 	local entries = {}
 	local i
-	local pl = {
-		count   = 0,
-		items   = string.gmatch(items,   "[%s]*([^,]+),?"),
-		weights = string.gmatch(weights, "[%s]*([^,]+),?"),
-		mods    = string.gmatch(mods,    "[%s]*([^,]+),?")
-	}
-	pl.count = #pl.items
+	local parsed = wml.parsed(cfg)
+	local a = wml.tovconfig({mods = mods})
+	local mods2 = a.mods
 
-	if pl.count == 0 then
-		wml.variables[list] = nil
-		return
-	end
 
-	for i = 1, pl.count do
-		table.insert(entries, {pl.items[i], pl.weights[i], pl.mods[i]})
-	end
-
-	local ct, ix = 0, 0
-	for w in string.gmatch(weights, "[%s]*([%d]+),?") do
-		if ix == 0 then
-			wml.variables[list] = nil
+	std_print(dump_lua_value(parsed, "parsed", "  "))
+	std_print("mods  = " .. mods)
+	std_print("mods2 = " .. mods2)
+	std_print(dump_lua_value(wml.parsed(a), "parsed_mods", "  "))
+	if mods then
+		if #mods < 2 then
+			H.wml_error("[prob_list] mods= should start with delimiting character.... etc.")
 		end
-		local i = entries[ix + 1]
-		if i then
-			ct = ct + w
-			wml.variables[string.format("%s.entry[%d].item", list, ix)] = i
-			wml.variables[string.format("%s.entry[%d].weight", list, ix)] = w
-			ix = ix + 1
-		else
-			break
-		end
+		delim = string.sub(mods, 1, 1)
+		mods = string.sub(mods, 2)
 	end
-	wml.variables[string.format("%s.total_weight", list)] = ct
+
+-- 	local pl = {
+-- 		count   = 0,
+-- 		items   = string.gmatch(items,   "[%s]*([^,]+),?"),
+-- 		weights = string.gmatch(weights, "[%s]*([^,]+),?"),
+-- 		mods    = mods and mods.split(delim)
+-- 	}
+
+-- 	pl.count = #pl.items
+
+-- 	if pl.count == 0 then
+-- 		wml.variables[list] = nil
+-- 		return
+-- 	end
+--
+-- 	for i = 1, pl.count do
+-- 		table.insert(entries, {pl.items[i], pl.weights[i], pl.mods[i]})
+-- 	end
+--
+-- 	local ct, ix = 0, 0
+-- 	for w in string.gmatch(weights, "[%s]*([%d]+),?") do
+-- 		if ix == 0 then
+-- 			wml.variables[list] = nil
+-- 		end
+-- 		local i = entries[ix + 1]
+-- 		if i then
+-- 			ct = ct + w
+-- 			wml.variables[string.format("%s.entry[%d].item", list, ix)] = i
+-- 			wml.variables[string.format("%s.entry[%d].weight", list, ix)] = w
+-- 			ix = ix + 1
+-- 		else
+-- 			break
+-- 		end
+-- 	end
+-- 	wml.variables[string.format("%s.total_weight", list)] = ct
 end
+
+-- function wesnoth.wml_actions.prob_list_late(cfg)
+-- 	local list = cfg.name or H.wml_error("[prob_list] requires a name= key")
+-- 	local items = cfg.items or H.wml_error("[prob_list] requires a items= key")
+-- 	local weights = cfg.weights or H.wml_error("[prob_list] requires a weights= key")
+-- 	local entries = {}
+-- 	for i in string.gmatch(items, "[%s]*([^,]+),?") do
+-- 		table.insert(entries, i)
+-- 	end
+-- 	wml.variables[string.format("%s.weights", list)] = wml.literal(cfg).weights
+-- 	if #entries > 0 then
+-- 		local ct, ix = 0, 0
+-- 		for w in string.gmatch(weights, "[%s]*([%d]+),?") do
+-- 			if ix == 0 then
+-- 				wml.variables[list] = nil
+-- 			end
+-- 			local i = entries[ix + 1]
+-- 			if i then
+-- -- 				ct = ct + w
+-- 				wml.variables[string.format("%s.entry[%d].item", list, ix)] = i
+-- -- 				wml.variables[string.format("%s.entry[%d].weight", list, ix)] = w
+-- 				ix = ix + 1
+-- 			else
+-- 				break
+-- 			end
+-- 		end
+-- -- 		wml.variables[string.format("%s.total_weight", list)] = ct
+-- 	end
+-- end
 
 
 function wesnoth.wml_actions.prob_list(cfg)
@@ -50,6 +105,7 @@ function wesnoth.wml_actions.prob_list(cfg)
 	for i in string.gmatch(items, "[%s]*([^,]+),?") do
 		table.insert(entries, i)
 	end
+	wml.variables[string.format("%s.weights", list)] = wml.literal(cfg).weights
 	if #entries > 0 then
 		local ct, ix = 0, 0
 		for w in string.gmatch(weights, "[%s]*([%d]+),?") do
