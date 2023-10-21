@@ -853,6 +853,10 @@ local function constructUnit(var, unstore)
 	set_p(unit, "moves", math.min(get_n(unit, "moves"), get_n(unit, "max_moves")))
 
 	local function calculate_vulnerability(damage_type)
+		-- Additive threshold -- the percentage for a vulnerability value below which armor resists are added
+		-- together, beyond which armor resists are logarithmically combined. From a resistance view, 1
+		-- respresents 0% resist and 0.9 10% resist
+		local add_thresh = 1
 		local i
 		local bonus, penalty, deduct = 0, 0, 0
 		local vul = math.max(0, get_n(unit, "variables.resistance." .. damage_type, 100)) / 100
@@ -877,7 +881,7 @@ local function constructUnit(var, unstore)
 		-- Add the penalty to the base vulnerability
 		vul = vul - penalty
 
-		-- If we don't get down to at least 100% (i.e., negative resistance) then just
+		-- If we don't get down to at least 100%,  (i.e., negative resistance) then just
 		-- return with that value
 		if vul - bonus >= 1 then
 			return vul - bonus
@@ -886,9 +890,9 @@ local function constructUnit(var, unstore)
 		-- If net vulnerability (after equipment penalties) is > 100%, then we split it up into
 		-- a "deduct" value, which will be subtracted from resists, and set vulnerability to
 		-- 100%, which will be fractionally mitigated by equipment resists.
-		if vul > 1 then
-			deduct = vul - 1
-			vul = 1
+		if vul > add_thresh then
+			deduct = vul - add_thresh
+			vul = add_thresh
 		end
 
 		-- Determine the percentage of the total bonus that each piece is contributing
@@ -902,9 +906,9 @@ local function constructUnit(var, unstore)
 			-- Note that we don't need to check for items with penalties, because those will have zero pct.
 
 			-- This calculates how much this piece of armor will reduce vulnerability
-			local multiplier = 1 - equip[i].value + deduct * equip[i].pct
+			local multiplier = 1 - equip[i].value * add_thresh + deduct * equip[i].pct
 			-- Any piece that ends up over 100% here means we are invulnerable
-			if multiplier < 0 then
+			if multiplier < (1 - add_thresh) then
 				return 0
 			end
 			equip[i].mult = multiplier

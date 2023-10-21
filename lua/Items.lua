@@ -2071,6 +2071,7 @@ end
 --     mode - either "replace" or "append", as with [set_variables], but does
 --            not support insert or merge. Default value is "replace".
 -- [/describe_item]
+-- TODO:
 function wesnoth.wml_actions.describe_item(cfg)
 	local item_var = cfg.item or H.wml_error("[describe_item] requires an item= key")
 	local dest  = cfg.dest or H.wml_error("[describe_item] requires a dest= key")
