@@ -44,10 +44,10 @@ function prob_list_eval(cfg)
 end
 
 function wesnoth.wml_actions.prob_list(cfg)
-	local name    = cfg.name or H.wml_error("[prob_list2] requires a name= key")
+	local name    = cfg.name or H.wml_error("[prob_list] requires a name= key")
 	local lcfg    = wml.literal(cfg)
-	local items   = lcfg.items or H.wml_error("[prob_list2] requires a items= key")
-	local weights = lcfg.weights or H.wml_error("[prob_list2] requires a weights= key")
+	local items   = lcfg.items or H.wml_error("[prob_list] requires a items= key")
+	local weights = lcfg.weights or H.wml_error("[prob_list] requires a weights= key")
 	local literal = cfg.literal or false
 	local list    = {
 		name    = name,
@@ -57,13 +57,16 @@ function wesnoth.wml_actions.prob_list(cfg)
 	}
 
 	wml.variables[name] = nil
-	wml.variables[string.format("%s.weights", name)] = cfg.weights
-	wml.variables[string.format("%s.entries[0].item", name)] = "hello"
-	wml.variables[string.format("%s.entries[1].item", name)] = "helol"
-	std_print(dump_lua_value(wml.variables[name], name))
+-- 	wml.variables[string.format("%s.weights", name)] = cfg.weights
+-- 	wml.variables[string.format("%s.entries[0].item", name)] = "hello"
+-- 	wml.variables[string.format("%s.entries[1].item", name)] = "helol"
+-- 	std_print(dump_lua_value(wml.variables[name], name))
 
 	-- If not using late expansion, then expand then now
 	wml.variables[name] = literal and list or prob_list_eval(wml.tovconfig(list))
+	if literal then
+		std_print(dump_lua_value(wml.variables[name], name))
+	end
 end
 
 function wesnoth.wml_actions.prob_list_old(cfg)
