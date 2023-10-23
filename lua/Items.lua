@@ -2450,6 +2450,7 @@ function wesnoth.wml_actions.describe_item(cfg)
 
 -- 		local fuck =
 		local delimit = false
+		local needcr = false
 		for i = 1, #stats do
 			-- We lump all resistances together into stat category 1
 			local stat_cat = i < 7 and 1 or i - 5
@@ -2484,11 +2485,15 @@ function wesnoth.wml_actions.describe_item(cfg)
 				end
 				-- If this stat was enchanted, then make it purdy
 				stat = ench_stat(stats[i][3] and stats[i][3] ~= 0, stat)
+				if needcr then
+					desc = desc .. "\n"
+					needcr = false
+					delimit = false
+				end
 				desc = desc .. (delimit and ", " or "") .. stat .. stats[i][1]
 				delimit = true
 				if i == 6 then
-					desc = desc .. "\n"
-					delimit = false
+					needcr = true
 				end
 			end
 		end
