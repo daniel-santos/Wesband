@@ -332,7 +332,7 @@ function noarr_lua_table2wml(t)
 		if type(v) ~= "table" then
 			wml[k] = v
 		else
-			table.insert(wml, {k , {1, noarr_lua_table2wml(v)}})
+			table.insert(wml, {k , noarr_lua_table2wml(v)})
 		end
 	end
 

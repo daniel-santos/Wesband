@@ -12,7 +12,7 @@ function prob_list_eval(cfg)
 	list = wml.parsed(cfg)
 	list.literal = false
 
-	std_print(dump_lua_value(list, "parsed_list", "  "))
+-- 	std_print(dump_lua_value(list, "parsed_list", "  "))
 
 	local pl = {
 		count   = 0,
