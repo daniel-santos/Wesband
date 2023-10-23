@@ -1,5 +1,980 @@
 local _ = wesnoth.textdomain "wesnoth-Wesband"
 
+weapon_data = {
+	table = {
+		axe = {
+			names = {"axe", "battle axe"},
+			category = "melee_weapon",
+			range = "melee",
+			name = "axe",
+			user_name = "axe",
+			description = _ "axe",
+			icon = "axe",
+			ground_icon = "axe",
+			type = "blade",
+			class = "heavy_blade",
+			class_description = "Heavy Blade",
+			damage = 11,
+			evade_adjust = -3,
+			body_damage_rate = 30,
+			deft_damage_rate = 10,
+			body_number_rate = 5,
+			material = "metal",
+			special_type = {
+				cleave = 1
+			}
+		},
+		bow = {
+			names = {"bow", "longbow"},
+			category = "ranged_weapon",
+			range = "ranged",
+			name = "bow",
+			user_name = "bow",
+			description = _ "bow",
+			icon = "bow",
+			ground_icon = "bow",
+			type = "pierce",
+			class = "bow",
+			class_description = "Bow",
+			damage = 4,
+			number = 2,
+			deft_damage_rate = 20,
+			deft_number_rate = 10,
+			material = "wood",
+			special_type = {
+				marksman = 1,
+				fire_shot_bow = 1,
+				remaining_ammo_bow = 1
+			}
+		},
+		lob = {
+			names = {"chakram"},
+			category = "ranged_weapon",
+			range = "ranged",
+			name = "lob",
+			user_name = "chakram",
+			description = _ "chakram",
+			icon = "chakram",
+			ground_icon = "hatchet",
+			type = "blade",
+			class = "thrown_heavy_blade",
+			class_description = "Thrown Heavy Blade",
+			damage = 5,
+			body_damage_rate = 20,
+			deft_damage_rate = 20,
+			body_number_rate = 5,
+			material = "metal"
+		},
+		cleaver = {
+			names = {"cleaver"},
+			category = "melee_weapon",
+			range = "melee",
+			name = "axe",
+			user_name = "cleaver",
+			description = _ "cleaver",
+			icon = "cleaver",
+			ground_icon = "cleaver",
+			type = "blade",
+			class = "heavy_blade",
+			class_description = "Heavy Blade",
+			damage = 5,
+			number = 2,
+			evade_adjust = -3,
+			body_damage_rate = 15,
+			deft_damage_rate = 5,
+			body_number_rate = 5,
+			deft_number_rate = 5,
+			material = "metal",
+			special_type = {
+				cleave = 1
+			}
+		},
+		club = {
+			names = {"club"},
+			category = "melee_weapon",
+			range = "melee",
+			name = "mace",
+			user_name = "club",
+			description = _ "club",
+			icon = "club-small",
+			ground_icon = "club",
+			type = "impact",
+			class = "bludgeon",
+			class_description = "Bludgeon",
+			damage = 3,
+			number = 2,
+			evade_adjust = -2,
+			body_damage_rate = 15,
+			deft_damage_rate = 5,
+			body_number_rate = 5,
+			deft_number_rate = 5,
+			material = "wood",
+			special_type = {
+				storm = 1
+			}
+		},
+		crossbow = {
+			names = {"crossbow"},
+			category = "ranged_weapon",
+			range = "ranged",
+			name = "crossbow",
+			user_name = "crossbow",
+			description = _ "crossbow",
+			icon = "crossbow-human",
+			ground_icon = "crossbow",
+			type = "pierce",
+			class = "crossbow",
+			class_description = "Crossbow",
+			damage = 8,
+			deft_damage_rate = 20,
+			material = "wood",
+			special_type = {
+				readied_bolt = 1,
+				fire_shot_xbow = 1
+			}
+		},
+		dagger = {
+			names = {"dagger"},
+			category = "melee_weapon",
+			range = "melee",
+			name = "dagger",
+			user_name = "dagger",
+			description = _ "dagger",
+			icon = "dagger-human",
+			ground_icon = "dagger",
+			type = "blade",
+			class = "light_blade",
+			class_description = "Light Blade",
+			damage = 4,
+			number = 2,
+			body_damage_rate = 5,
+			deft_damage_rate = 15,
+			deft_number_rate = 10,
+			material = "metal",
+			special_type = {
+				backstab = 1,
+				soultrap = 1
+			}
+		},
+		dart = {
+			names = {"dart"},
+			category = "ranged_weapon",
+			range = "ranged",
+			name = "thrown-light-blade",
+			user_name = "dagger-thrown",
+			description = _ "dart",
+			icon = "dagger-thrown-human",
+			ground_icon = "dagger",
+			type = "pierce",
+			class = "thrown_light_blade",
+			class_description = "Thrown Light Blade",
+			damage = 2,
+			number = 2,
+			body_damage_rate = 5,
+			deft_damage_rate = 15,
+			deft_number_rate = 10,
+			material = "metal",
+			special_type = {
+				allow_poison = 1,
+				remaining_ammo_thrown_light_blade = 1
+			}
+		},
+		epee = {
+			names = {"epee"},
+			category = "melee_weapon",
+			range = "melee",
+			name = "sword",
+			user_name = "epee",
+			description = _ "epee",
+			icon = "saber-human",
+			ground_icon = "saber",
+			type = "pierce",
+			class = "light_blade",
+			class_description = "Light Blade",
+			damage = 4,
+			number = 2,
+			body_damage_rate = 5,
+			deft_damage_rate = 15,
+			deft_number_rate = 10,
+			material = "metal",
+			special_type = {
+				riposte = 1,
+				slashdash = 1
+			}
+		},
+		faerie_staff = {
+			names = {"faerie_staff"},
+			category = "melee_weapon",
+			range = "melee",
+			name = "magestaff",
+			user_name = "magestaff",
+			description = _ "faerie staff",
+			icon = "staff-elven",
+			ground_icon = "magestaff",
+			type = "impact",
+			class = "bludgeon",
+			class_description = "Bludgeon",
+			damage = 7,
+			evade_adjust = -2,
+			body_damage_rate = 30,
+			deft_damage_rate = 10,
+			body_number_rate = 5,
+			material = "wood",
+			faerie_magic_adjust = 10,
+			special_type = {
+				storm = 1
+			}
+		},
+		glaive = {
+			names = {"glaive"},
+			category = "melee_weapon",
+			range = "melee",
+			name = "spear",
+			user_name = "glaive",
+			description = _ "glaive",
+			icon = "spear",
+			ground_icon = "spear-fancy",
+			type = "blade",
+			class = "polearm",
+			class_description = "Polearm",
+			damage = 7,
+			number = 2,
+			evade_adjust = -2,
+			body_damage_rate = 10,
+			deft_damage_rate = 10,
+			body_number_rate = 5,
+			deft_number_rate = 5,
+			material = "metal"
+		},
+		hammer = {
+			names = {"hammer"},
+			category = "melee_weapon",
+			range = "melee",
+			name = "mace",
+			user_name = "hammer",
+			description = _ "hammer",
+			icon = "hammer-dwarven",
+			ground_icon = "hammer-runic",
+			type = "impact",
+			class = "bludgeon",
+			class_description = "Bludgeon",
+			damage = 11,
+			evade_adjust = -3,
+			body_damage_rate = 25,
+			deft_damage_rate = 15,
+			body_number_rate = 5,
+			material = "metal",
+			special_type = {
+				storm = 1
+			}
+		},
+		hatchet = {
+			names = {"hatchet"},
+			category = "ranged_weapon",
+			range = "ranged",
+			name = "lob",
+			user_name = "hatchet",
+			description = _ "thrown hatchet",
+			icon = "hatchet",
+			ground_icon = "hatchet",
+			type = "blade",
+			class = "thrown_heavy_blade",
+			class_description = "Thrown Heavy Blade",
+			damage = 7,
+			body_damage_rate = 20,
+			deft_damage_rate = 20,
+			body_number_rate = 5,
+			material = "metal",
+			special_type = {
+				remaining_ammo_thrown_heavy_blade = 1
+			}
+		},
+		javelin = {
+			names = {"javelin"},
+			category = "ranged_weapon",
+			range = "ranged",
+			name = "javelin",
+			user_name = "javelin",
+			description = _ "javelin",
+			icon = "javelin-human",
+			ground_icon = "spear-fancy",
+			type = "pierce",
+			class = "javelin",
+			class_description = "Javelin",
+			damage = 7,
+			body_damage_rate = 20,
+			deft_damage_rate = 20,
+			deft_number_rate = 5,
+			material = "metal",
+			special_type = {
+				remaining_ammo_javelin = 1
+			}
+		},
+		kusarigama = {
+			names = {"kusarigama"},
+			category = "melee_weapon",
+			range = "melee",
+			name = "axe",
+			user_name = "kusarigama",
+			description = _ "kusarigama",
+			icon = "scythe",
+			ground_icon = "hatchet",
+			type = "blade",
+			class = "heavy_blade",
+			class_description = "Heavy Blade",
+			damage = 2,
+			number = 3,
+			evade_adjust = -3,
+			body_damage_rate = 15,
+			deft_damage_rate = 5,
+			body_number_rate = 5,
+			deft_number_rate = 5,
+			material = "metal",
+			special_type = {
+				allow_poison = 1,
+				throwable = 1
+			}
+		},
+		mace = {
+			names = {"mace", "mace-spiked", "flail"},
+			category = "melee_weapon",
+			range = "melee",
+			name = "mace",
+			user_name = "mace",
+			description = _ "mace",
+			icon = "mace",
+			ground_icon = "mace",
+			type = "impact",
+			class = "bludgeon",
+			class_description = "Bludgeon",
+			damage = 11,
+			evade_adjust = -3,
+			body_damage_rate = 40,
+			body_number_rate = 5,
+			material = "metal",
+			special_type = {
+				storm = 1
+			}
+		},
+		staff = {
+			names = {"magestaff", "staff"},
+			category = "melee_weapon",
+			range = "melee",
+			name = "magestaff",
+			user_name = "magestaff",
+			description = _ "magestaff",
+			icon = "staff-magic",
+			ground_icon = "magestaff",
+			type = "impact",
+			class = "bludgeon",
+			class_description = "Bludgeon",
+			damage = 7,
+			evade_adjust = -2,
+			body_damage_rate = 30,
+			deft_damage_rate = 10,
+			body_number_rate = 5,
+			material = "wood",
+			human_magic_adjust = 20,
+			special_type = {
+				storm = 1
+			}
+		},
+		necrostaff = {
+			names = {"necrostaff"},
+			category = "melee_weapon",
+			range = "melee",
+			name = "magestaff",
+			user_name = "necrostaff",
+			description = _ "necromancer staff",
+			icon = "staff-necromantic",
+			ground_icon = "magestaff",
+			type = "impact",
+			class = "bludgeon",
+			class_description = "Bludgeon",
+			damage = 7,
+			evade_adjust = -2,
+			body_damage_rate = 30,
+			deft_damage_rate = 10,
+			body_number_rate = 5,
+			material = "wood",
+			dark_magic_adjust = 15,
+			special_type = {
+				plague_wbd = 1,
+				storm = 1
+			}
+		},
+		plague_staff = {
+			names = {"plague staff"},
+			category = "melee_weapon",
+			range = "melee",
+			name = "magestaff",
+			user_name = "necrostaff",
+			description = _ "necromancer staff",
+			icon = "staff-necromantic",
+			ground_icon = "magestaff",
+			type = "impact",
+			class = "bludgeon",
+			class_description = "Bludgeon",
+			damage = 7,
+			evade_adjust = -2,
+			body_damage_rate = 30,
+			deft_damage_rate = 10,
+			body_number_rate = 5,
+			material = "wood",
+			dark_magic_adjust = 15,
+			special_type = {
+				plague = 1,
+				storm = 1
+			}
+		},
+		pike = {
+			names = {"pike", "halberd", "trident"},
+			category = "melee_weapon",
+			range = "melee",
+			name = "spear",
+			user_name = "pike",
+			description = _ "pike",
+			icon = "pike",
+			ground_icon = "spear-fancy",
+			type = "pierce",
+			class = "polearm",
+			class_description = "Polearm",
+			damage = 9,
+			number = 2,
+			evade_adjust = -2,
+			body_damage_rate = 10,
+			deft_damage_rate = 10,
+			body_number_rate = 5,
+			deft_number_rate = 5,
+			material = "metal",
+			special_type = {
+				ensnare = 1,
+				firststrike = 1,
+				pointpike = 1
+			}
+		},
+		pitchfork = {
+			names = {"pitchfork"},
+			category = "melee_weapon",
+			range = "melee",
+			name = "spear",
+			user_name = "pitchfork",
+			description = _ "pitchfork",
+			icon = "pitchfork",
+			ground_icon = "pitchfork",
+			type = "pierce",
+			class = "polearm",
+			class_description = "Polearm",
+			damage = 5,
+			number = 2,
+			evade_adjust = -1,
+			body_damage_rate = 10,
+			deft_damage_rate = 10,
+			body_number_rate = 5,
+			deft_number_rate = 5,
+			material = "metal",
+			special_type = {
+				throwable = 1,
+				pointpike = 1
+			}
+		},
+		runic_hammer = {
+			names = {"runic_hammer"},
+			category = "melee_weapon",
+			range = "melee",
+			name = "magestaff",
+			user_name = "hammer",
+			description = _ "runic hammer",
+			icon = "hammer-dwarven-runic",
+			ground_icon = "hammer-runic",
+			type = "impact",
+			class = "bludgeon",
+			class_description = "Bludgeon",
+			damage = 7,
+			evade_adjust = -2,
+			body_damage_rate = 30,
+			deft_damage_rate = 10,
+			body_number_rate = 5,
+			material = "metal",
+			runic_magic_adjust = 20,
+			special_type = {
+				storm = 1
+			}
+		},
+		saber = {
+			names = {"saber"},
+			category = "melee_weapon",
+			range = "melee",
+			name = "sword",
+			user_name = "saber",
+			description = _ "saber",
+			icon = "saber-human",
+			ground_icon = "saber",
+			type = "blade",
+			class = "light_blade",
+			class_description = "Light Blade",
+			damage = 6,
+			number = 2,
+			body_damage_rate = 5,
+			deft_damage_rate = 15,
+			deft_number_rate = 10,
+			material = "metal",
+			special_type = {
+				riposte = 1,
+				slashdash = 1
+			}
+		},
+		scimitar = {
+			names = {"scimitar"},
+			category = "melee_weapon",
+			range = "melee",
+			name = "sword",
+			user_name = "sword",
+			description = _ "scimitar",
+			icon = "sword-elven",
+			ground_icon = "sword",
+			type = "blade",
+			class = "heavy_blade",
+			class_description = "Heavy Blade",
+			damage = 7,
+			number = 2,
+			evade_adjust = -2,
+			body_damage_rate = 5,
+			deft_damage_rate = 15,
+			body_number_rate = 5,
+			deft_number_rate = 5,
+			material = "metal",
+			special_type = {
+				cleave = 1
+			}
+		},
+		scythe = {
+			names = {"scythe"},
+			category = "melee_weapon",
+			range = "melee",
+			name = "axe",
+			user_name = "scythe",
+			description = _ "scythe",
+			icon = "scythe",
+			ground_icon = "hatchet",
+			type = "blade",
+			class = "heavy_blade",
+			class_description = "Heavy Blade",
+			damage = 6,
+			number = 2,
+			evade_adjust = -3,
+			body_damage_rate = 15,
+			deft_damage_rate = 5,
+			body_number_rate = 10,
+			material = "metal",
+			special_type = {
+				cleave = 1
+			}
+		},
+		sling = {
+			names = {"sling"},
+			category = "ranged_weapon",
+			range = "ranged",
+			name = "sling",
+			user_name = "sling",
+			description = _ "sling",
+			icon = "sling",
+			ground_icon = "sling",
+			type = "impact",
+			class = "lob",
+			class_description = "Lob",
+			damage = 3,
+			body_damage_rate = 20,
+			deft_damage_rate = 20,
+			deft_number_rate = 5,
+			material = "cloth",
+			special_type = {
+				goliath_bane = 1
+			}
+		},
+		spear = {
+			names = {"spear", "lance"},
+			category = "melee_weapon",
+			range = "melee",
+			name = "spear",
+			user_name = "spear",
+			description = _ "spear",
+			icon = "spear",
+			ground_icon = "spear-fancy",
+			type = "pierce",
+			class = "polearm",
+			class_description = "Polearm",
+			damage = 7,
+			number = 2,
+			evade_adjust = -1,
+			body_damage_rate = 10,
+			deft_damage_rate = 10,
+			body_number_rate = 5,
+			deft_number_rate = 5,
+			material = "metal",
+			special_type = {
+				throwable = 1,
+				firststrike = 1,
+				pointpike = 1
+			}
+		},
+		spiked_gauntlet = {
+			names = {"spiked_gauntlet"},
+			category = "melee_weapon",
+			range = "melee",
+			name = "fist",
+			user_name = "spiked gauntlet",
+			description = _ "spiked gauntlet",
+			icon = "pike",
+			ground_icon = "gauntlets",
+			type = "pierce",
+			class = "bludgeon",
+			class_description = "Bludgeon",
+			damage = 5,
+			number = 2,
+			evade_adjust = -1,
+			body_damage_rate = 15,
+			deft_damage_rate = 5,
+			body_number_rate = 8,
+			deft_number_rate = 2,
+			material = "metal"
+		},
+		spirit_staff = {
+			names = {"spirit_staff"},
+			category = "melee_weapon",
+			range = "melee",
+			name = "magestaff",
+			user_name = "spirit_staff",
+			description = _ "spirit staff",
+			icon = "staff-magic",
+			ground_icon = "magestaff",
+			type = "impact",
+			class = "bludgeon",
+			class_description = "Bludgeon",
+			damage = 7,
+			evade_adjust = -2,
+			body_damage_rate = 30,
+			deft_damage_rate = 10,
+			body_number_rate = 5,
+			material = "wood",
+			spirit_magic_adjust = 20,
+			special_type = {
+				storm = 1
+			}
+		},
+		sword = {
+			names = {"sword", "longsword", "greatsword", "short sword"},
+			category = "melee_weapon",
+			range = "melee",
+			name = "sword",
+			user_name = "sword",
+			description = _ "sword",
+			icon = "sword-human",
+			ground_icon = "sword",
+			type = "blade",
+			class = "heavy_blade",
+			class_description = "Heavy Blade",
+			damage = 7,
+			number = 2,
+			evade_adjust = -2,
+			body_damage_rate = 15,
+			deft_damage_rate = 5,
+			body_number_rate = 5,
+			deft_number_rate = 5,
+			material = "metal",
+			special_type = {
+				cleave = 1
+			}
+		},
+		thrown_dagger = {
+			names = {"thrown_dagger", "throwing knives"},
+			category = "ranged_weapon",
+			range = "ranged",
+			name = "thrown-light-blade",
+			user_name = "dagger_thrown",
+			description = _ "thrown dagger",
+			icon = "dagger-thrown-human",
+			ground_icon = "dagger",
+			type = "blade",
+			class = "thrown_light_blade",
+			class_description = "Thrown Light Blade",
+			damage = 2,
+			number = 2,
+			body_damage_rate = 5,
+			deft_damage_rate = 15,
+			deft_number_rate = 10,
+			material = "metal",
+			special_type = {
+				allow_poison = 1,
+				remaining_ammo_thrown_light_blade = 1
+			}
+		},
+		thunderstick = {
+			names = {"thunderstick"},
+			category = "ranged_weapon",
+			range = "ranged",
+			name = "thunderstick",
+			user_name = "thunderstick",
+			description = _ "thunderstick",
+			icon = "thunderstick",
+			ground_icon = "thunderstick",
+			type = "pierce",
+			class = "thunderstick",
+			class_description = "Thunderstick",
+			damage = 22,
+			max_damage = 22,
+			ts_level = 1,
+			material = "composite"
+		},
+		whip = {
+			names = {"whip"},
+			category = "melee_weapon",
+			range = "melee",
+			name = "fist",
+			user_name = "whip",
+			description = _ "whip",
+			icon = "whip",
+			ground_icon = "sling",
+			type = "blade",
+			class = "none",
+			class_description = "Lash",
+			damage = 4,
+			number = 2,
+			evade_adjust = -1,
+			body_damage_rate = 5,
+			deft_damage_rate = 5,
+			deft_number_rate = 20,
+			material = "cloth"
+		},
+		fist = {
+			names = {"fist"},
+			category = "melee_weapon",
+			range = "melee",
+			undroppable = 1,
+			name = "fist",
+			user_name = "fist",
+			description = _ "fist",
+			icon = "fist-human",
+			ground_icon = "fist",
+			type = "impact",
+			class = "bludgeon",
+			class_description = "Bludgeon",
+			damage = 1,
+			number = 1,
+			evade_adjust = 0,
+			body_damage_rate = 20,
+			deft_damage_rate = 10,
+			body_number_rate = 0,
+			deft_number_rate = 10,
+			human_magic_adjust = 0,
+			dark_magic_adjust = 0,
+			faerie_magic_adjust = 0,
+			runic_magic_adjust = 0,
+			spirit_magic_adjust = 0,
+			material = "cloth"
+		},
+		claws = {
+			names = {"claws"},
+			category = "melee_weapon",
+			range = "melee",
+			undroppable = 1,
+			name = "fist",
+			user_name = "claws",
+			description = _ "claws",
+			icon = "claws",
+			ground_icon = "claws",
+			type = "blade",
+			class = "light_blade",
+			class_description = "Light Blade",
+			damage = 2,
+			number = 1,
+			evade_adjust = 0,
+			body_damage_rate = 10,
+			deft_damage_rate = 15,
+			body_number_rate = 0,
+			deft_number_rate = 15,
+			human_magic_adjust = 0,
+			dark_magic_adjust = 0,
+			faerie_magic_adjust = 0,
+			runic_magic_adjust = 0,
+			spirit_magic_adjust = 0,
+			material = "cloth",
+			special_type = {
+				backstab = 1
+			}
+		},
+		bite = {
+			names = {"bite"},
+			category = "melee_weapon",
+			range = "melee",
+			undroppable = 1,
+			name = "fist",
+			user_name = "bite",
+			description = _ "bite",
+			icon = "bite",
+			ground_icon = "bite",
+			type = "blade",
+			class = "light_blade",
+			class_description = "Light Blade",
+			damage = 2,
+			number = 1,
+			evade_adjust = 0,
+			body_damage_rate = 10,
+			deft_damage_rate = 15,
+			body_number_rate = 0,
+			deft_number_rate = 15,
+			human_magic_adjust = 0,
+			dark_magic_adjust = 0,
+			faerie_magic_adjust = 0,
+			runic_magic_adjust = 0,
+			spirit_magic_adjust = 0,
+			material = "cloth",
+			special_type = {
+				drains = 1
+			}
+		},
+		rock_thrown = {
+			names = {"lob"},
+			category = "ranged_weapon",
+			range = "ranged",
+			undroppable = 1,
+			name = "lob",
+			user_name = "lob",
+			description = _ "thrown rock",
+			icon = "rock_thrown",
+			ground_icon = "rock_thrown",
+			type = "impact",
+			class = "lob",
+			class_description = "Lob",
+			damage = 1,
+			number = 1,
+			body_damage_rate = 20,
+			body_number_rate = 0,
+			deft_damage_rate = 10,
+			deft_number_rate = 0,
+			human_magic_adjust = 0,
+			dark_magic_adjust = 0,
+			faerie_magic_adjust = 0,
+			runic_magic_adjust = 0,
+			spirit_magic_adjust = 0,
+			material = "cloth"
+		}
+	},
+	aliases = {
+		["axe"]				= "axe",
+		["battle axe"]		= "axe",
+		["bow"]				= "bow",
+		["longbow"]			= "bow",
+		["chakram"]			= "lob",
+		["cleaver"]			= "cleaver",
+		["club"]			= "club",
+		["crossbow"]		= "crossbow",
+		["dagger"]			= "dagger",
+		["dart"]			= "dart",
+		["epee"]			= "epee",
+		["faerie_staff"]	= "faerie_staff",
+		["glaive"]			= "glaive",
+		["hammer"]			= "hammer",
+		["hatchet"]			= "hatchet",
+		["javelin"]			= "javelin",
+		["kusarigama"]		= "kusarigama",
+		["mace"]			= "mace",
+		["mace-spiked"]		= "mace",
+		["flail"]			= "mace",
+		["magestaff"]		= "staff",
+		["staff"]			= "staff",
+		["necrostaff"]		= "necrostaff",
+		["plague staff"]	= "plague_staff",
+		["pike"]			= "pike",
+		["halberd"]			= "pike",
+		["trident"]			= "pike",
+		["pitchfork"]		= "pitchfork",
+		["runic_hammer"]	= "runic_hammer",
+		["saber"]			= "saber",
+		["scimitar"]		= "scimitar",
+		["scythe"]			= "scythe",
+		["sling"]			= "sling",
+		["spear"]			= "spear",
+		["lance"]			= "spear",
+		["spiked_gauntlet"]	= "spiked_gauntlet",
+		["spirit_staff"]	= "spirit_staff",
+		["sword"]			= "sword",
+		["longsword"]		= "sword",
+		["greatsword"]		= "sword",
+		["short sword"]		= "sword",
+		["thrown_dagger"]	= "thrown_dagger",
+		["throwing knives"]	= "thrown_dagger",
+		["thunderstick"]	= "thunderstick",
+		["whip"]			= "whip",
+		["fist"]			= "fist",
+		["claws"]			= "claws",
+		["bite"]			= "bite",
+		["lob"]				= "rock_thrown"
+	},
+	conditions = {
+		"rusty,unbalanced,none,none,none,none,none,none,heavy,sharp,light,balanced"
+	},
+	specials = {
+		"allow_poison",
+		"backstab",
+		"cleave",
+		"drains",
+		"ensnare",
+		"fire_shot_bow",
+		"fire_shot_xbow",
+		"firststrike",
+		"goliath_bane",
+		"marksman",
+		"plague",
+		"plague_wbd",
+		"pointpike",
+		"readied_bolt",
+		"remaining_ammo_bow",
+		"remaining_ammo_javelin",
+		"remaining_ammo_thrown_heavy_blade",
+		"remaining_ammo_thrown_light_blade",
+		"riposte",
+		"slashdash",
+		"soultrap",
+		"storm",
+		"throwable"
+	},
+	fields = {
+		"name",
+		"category",
+		"range",
+		"user_name",
+		"description",
+		"icon",
+		"ground_icon",
+		"type",
+		"class",
+		"class_description",
+		"damage",
+		"evade_adjust",
+		"body_damage_rate",
+		"deft_damage_rate",
+		"body_number_rate",
+		"deft_number_rate",
+		"material",
+		"number",
+		"undroppable",
+		"human_magic_adjust",
+		"dark_magic_adjust",
+		"faerie_magic_adjust",
+		"runic_magic_adjust",
+		"spirit_magic_adjust"
+	}
+}
+
+magic_types = {
+	"human",
+	"dark",
+	"faerie",
+	"runic",
+	"spirit"
+}
+
 local function lappend(l, st)
 	local res = ""
 	if #st > 0 then
@@ -178,15 +1153,15 @@ function wesnoth.wml_actions.adjust_armor_description(args)
 	wml.variables[var] = adjustArmorDescription(wml.variables[var])
 end
 
-local function createWeapon(wtype, rank, attr, var)
+local function createWeapon(wtype, level, attr, var)
 	if attr == "random" then
 		W.set_variable { name = "r_temp", rand = "rusty,unbalanced,none,none,none,none,none,none,heavy,sharp,light,balanced" }
 		attr = wml.variables['r_temp']
 		W.clear_variable { name = "r_temp" }
 	end
 
-	local rank_frac = rank * 0.1 + 1
-	rank = math.floor((rank * 5 + 6) / 12)
+	local rank_frac = level * 0.1 + 1
+	local rank = math.floor((level * 5 + 6) / 12)
 
 	local function adjustCoreStats(wt)
 		if wt.range == "melee" then
@@ -203,7 +1178,6 @@ local function createWeapon(wtype, rank, attr, var)
 			wt.range = wt.range or "ranged"
 		end
 
-		wt.number = wt.number or 1
 		if wt.number == 0 then
 			wt.damage = wt.damage + 2 * rank
 		elseif wt.number == 1 then
@@ -289,15 +1263,17 @@ local function createWeapon(wtype, rank, attr, var)
 
 	local function adjustStats(wt)
 		-- this is static
-		wt.prob_name = wtype
+		wt.prob_name			= wtype
 		-- these will all be set later by other functions (see below)
-		wt.human_magic_adjust = 0
-		wt.dark_magic_adjust = 0
-		wt.faerie_magic_adjust = 0
-		wt.runic_magic_adjust = 0
-		wt.spirit_magic_adjust = 0
-		wt.absolute_value = 0
-
+		wt.human_magic_adjust	= wt.human_magic_adjust or 0
+		wt.dark_magic_adjust	= wt.dark_magic_adjust or 0
+		wt.faerie_magic_adjust	= wt.faerie_magic_adjust or 0
+		wt.runic_magic_adjust	= wt.runic_magic_adjust or 0
+		wt.spirit_magic_adjust	= wt.spirit_magic_adjust or 0
+		wt.absolute_value 		= wt.absolute_value or 0
+		wt.rank					= rank
+		wt.level				= level
+		wt.number				= wt.number or 1
 		return adjustCoreStats(wt)
 	end
 
@@ -398,925 +1374,25 @@ local function createWeapon(wtype, rank, attr, var)
 		return wt
 	end
 
-	local weapon
-	if wtype == "axe" or wtype == "battle axe" then
-		weapon = adjustStats {
-			category = "melee_weapon",
-			range = "melee",
-			name = "axe",
-			user_name = "axe",
-			description = _ "axe",
-			icon = "axe",
-			ground_icon = "axe",
-			type = "blade",
-			class = "heavy_blade",
-			class_description = "Heavy Blade",
-			damage = 11,
-			evade_adjust = -3,
-			body_damage_rate = 30,
-			deft_damage_rate = 10,
-			body_number_rate = 5,
-			material = "metal",
-			{ "special_type", {
-				cleave = 1
-			} }
-		}
-	elseif wtype == "bow" or wtype == "longbow" then
-		weapon = adjustStats {
-			category = "ranged_weapon",
-			range = "ranged",
-			name = "bow",
-			user_name = "bow",
-			description = _ "bow",
-			icon = "bow",
-			ground_icon = "bow",
-			type = "pierce",
-			class = "bow",
-			class_description = "Bow",
-			damage = 4,
-			number = 2,
-			deft_damage_rate = 20,
-			deft_number_rate = 10,
-			material = "wood",
-			{ "special_type", {
-				marksman = 1,
-				fire_shot_bow = 1,
-				remaining_ammo_bow = 1
-			} }
-		}
-	elseif wtype == "chakram" then
-		weapon = adjustStats {
-			category = "ranged_weapon",
-			range = "ranged",
-			name = "lob",
-			user_name = "chakram",
-			description = _ "chakram",
-			icon = "chakram",
-			ground_icon = "hatchet",
-			type = "blade",
-			class = "thrown_heavy_blade",
-			class_description = "Thrown Heavy Blade",
-			damage = 5,
-			body_damage_rate = 20,
-			deft_damage_rate = 20,
-			body_number_rate = 5,
-			material = "metal"
-		}
-	elseif wtype == "cleaver" then
-		weapon = adjustStats {
-			category = "melee_weapon",
-			range = "melee",
-			name = "axe",
-			user_name = "cleaver",
-			description = _ "cleaver",
-			icon = "cleaver",
-			ground_icon = "cleaver",
-			type = "blade",
-			class = "heavy_blade",
-			class_description = "Heavy Blade",
-			damage = 5,
-			number = 2,
-			evade_adjust = -3,
-			body_damage_rate = 15,
-			deft_damage_rate = 5,
-			body_number_rate = 5,
-			deft_number_rate = 5,
-			material = "metal",
-			{ "special_type", {
-				cleave = 1
-			} }
-		}
-	elseif wtype == "club" then
-		weapon = adjustStats {
-			category = "melee_weapon",
-			range = "melee",
-			name = "mace",
-			user_name = "club",
-			description = _ "club",
-			icon = "club-small",
-			ground_icon = "club",
-			type = "impact",
-			class = "bludgeon",
-			class_description = "Bludgeon",
-			damage = 3,
-			number = 2,
-			evade_adjust = -2,
-			body_damage_rate = 15,
-			deft_damage_rate = 5,
-			body_number_rate = 5,
-			deft_number_rate = 5,
-			material = "wood",
-			{ "special_type", {
-				storm = 1
-			} }
-		}
-	elseif wtype == "crossbow" then
-		weapon = adjustStats {
-			category = "ranged_weapon",
-			range = "ranged",
-			name = "crossbow",
-			user_name = "crossbow",
-			description = _ "crossbow",
-			icon = "crossbow-human",
-			ground_icon = "crossbow",
-			type = "pierce",
-			class = "crossbow",
-			class_description = "Crossbow",
-			damage = 8,
-			deft_damage_rate = 20,
-			material = "wood",
-			{ "special_type", {
-				readied_bolt = 1,
-				fire_shot_xbow = 1
-			} }
-		}
-	elseif wtype == "dagger" then
-		weapon = adjustStats {
-			category = "melee_weapon",
-			range = "melee",
-			name = "dagger",
-			user_name = "dagger",
-			description = _ "dagger",
-			icon = "dagger-human",
-			ground_icon = "dagger",
-			type = "blade",
-			class = "light_blade",
-			class_description = "Light Blade",
-			damage = 4,
-			number = 2,
-			body_damage_rate = 5,
-			deft_damage_rate = 15,
-			deft_number_rate = 10,
-			material = "metal",
-			{ "special_type", {
-				backstab = 1,
-				soultrap = 1
-			} }
-		}
-	elseif wtype == "dart" then
-		weapon = adjustStats {
-			category = "ranged_weapon",
-			range = "ranged",
-			name = "thrown-light-blade",
-			user_name = "dagger-thrown",
-			description = _ "dart",
-			icon = "dagger-thrown-human",
-			ground_icon = "dagger",
-			type = "pierce",
-			class = "thrown_light_blade",
-			class_description = "Thrown Light Blade",
-			damage = 2,
-			number = 2,
-			body_damage_rate = 5,
-			deft_damage_rate = 15,
-			deft_number_rate = 10,
-			material = "metal",
-			{ "special_type", {
-				allow_poison = 1,
-				remaining_ammo_thrown_light_blade = 1
-			} }
-		}
-	elseif wtype == "epee" then
-		weapon = adjustStats {
-			category = "melee_weapon",
-			range = "melee",
-			name = "sword",
-			user_name = "epee",
-			description = _ "epee",
-			icon = "saber-human",
-			ground_icon = "saber",
-			type = "pierce",
-			class = "light_blade",
-			class_description = "Light Blade",
-			damage = 4,
-			number = 2,
-			body_damage_rate = 5,
-			deft_damage_rate = 15,
-			deft_number_rate = 10,
-			material = "metal",
-			{ "special_type", {
-				riposte = 1,
-				slashdash = 1
-			} }
-		}
-	elseif wtype == "faerie_staff" then
-		weapon = adjustStats {
-			category = "melee_weapon",
-			range = "melee",
-			name = "magestaff",
-			user_name = "magestaff",
-			description = _ "faerie staff",
-			icon = "staff-elven",
-			ground_icon = "magestaff",
-			type = "impact",
-			class = "bludgeon",
-			class_description = "Bludgeon",
-			damage = 7,
-			evade_adjust = -2,
-			body_damage_rate = 30,
-			deft_damage_rate = 10,
-			body_number_rate = 5,
-			material = "wood",
-			{ "special_type", {
-				storm = 1
-			} }
-		}
-		weapon = addMagicAdjust("faerie_magic_adjust", 10, weapon)
-	elseif wtype == "glaive" then
-		weapon = adjustStats {
-			category = "melee_weapon",
-			range = "melee",
-			name = "spear",
-			user_name = "glaive",
-			description = _ "glaive",
-			icon = "spear",
-			ground_icon = "spear-fancy",
-			type = "blade",
-			class = "polearm",
-			class_description = "Polearm",
-			damage = 7,
-			number = 2,
-			evade_adjust = -2,
-			body_damage_rate = 10,
-			deft_damage_rate = 10,
-			body_number_rate = 5,
-			deft_number_rate = 5,
-			material = "metal"
-		}
-	elseif wtype == "hammer" then
-		weapon = adjustStats {
-			category = "melee_weapon",
-			range = "melee",
-			name = "mace",
-			user_name = "hammer",
-			description = _ "hammer",
-			icon = "hammer-dwarven",
-			ground_icon = "hammer-runic",
-			type = "impact",
-			class = "bludgeon",
-			class_description = "Bludgeon",
-			damage = 11,
-			evade_adjust = -3,
-			body_damage_rate = 25,
-			deft_damage_rate = 15,
-			body_number_rate = 5,
-			material = "metal",
-			{ "special_type", {
-				storm = 1
-			} }
-		}
-	elseif wtype == "hatchet" then
-		weapon = adjustStats {
-			category = "ranged_weapon",
-			range = "ranged",
-			name = "lob",
-			user_name = "hatchet",
-			description = _ "thrown hatchet",
-			icon = "hatchet",
-			ground_icon = "hatchet",
-			type = "blade",
-			class = "thrown_heavy_blade",
-			class_description = "Thrown Heavy Blade",
-			damage = 7,
-			body_damage_rate = 20,
-			deft_damage_rate = 20,
-			body_number_rate = 5,
-			material = "metal",
-			{ "special_type", {
-				remaining_ammo_thrown_heavy_blade = 1
-			} }
-		}
-	elseif wtype == "javelin" then
-		weapon = adjustStats {
-			category = "ranged_weapon",
-			range = "ranged",
-			name = "javelin",
-			user_name = "javelin",
-			description = _ "javelin",
-			icon = "javelin-human",
-			ground_icon = "spear-fancy",
-			type = "pierce",
-			class = "javelin",
-			class_description = "Javelin",
-			damage = 7,
-			body_damage_rate = 20,
-			deft_damage_rate = 20,
-			deft_number_rate = 5,
-			material = "metal",
-			{ "special_type", {
-				remaining_ammo_javelin = 1
-			} }
-		}
-	elseif wtype == "kusarigama" then
-		weapon = adjustStats {
-			category = "melee_weapon",
-			range = "melee",
-			name = "axe",
-			user_name = "kusarigama",
-			description = _ "kusarigama",
-			icon = "scythe",
-			ground_icon = "hatchet",
-			type = "blade",
-			class = "heavy_blade",
-			class_description = "Heavy Blade",
-			damage = 2,
-			number = 3,
-			evade_adjust = -3,
-			body_damage_rate = 15,
-			deft_damage_rate = 5,
-			body_number_rate = 5,
-			deft_number_rate = 5,
-			material = "metal",
-			{ "special_type", {
-				allow_poison = 1,
-				throwable = 1
-			} },
-			{ "thrown", adjustCoreStats {
-				category = "ranged_weapon",
-				range = "ranged",
-				name = "lob",
-				user_name = "kusarigama",
-				description = _ "kusarigama",
-				icon = "scythe",
-				type = "blade",
-				class = "thrown_heavy_blade",
-				class_description = "Thrown Heavy Blade",
-				damage = 3,
-				number = 1,
-				body_damage_rate = 30,
-				deft_damage_rate = 10,
-				body_number_rate = 5,
-				deft_number_rate = 0,
-				{ "special_type", {
-					slow = 1
-				} }
-			} }
-		}
-	elseif wtype == "mace" or wtype == "mace-spiked" or wtype == "flail" then
-		weapon = adjustStats {
-			category = "melee_weapon",
-			range = "melee",
-			name = "mace",
-			user_name = "mace",
-			description = _ "mace",
-			icon = "mace",
-			ground_icon = "mace",
-			type = "impact",
-			class = "bludgeon",
-			class_description = "Bludgeon",
-			damage = 11,
-			evade_adjust = -3,
-			body_damage_rate = 40,
-			body_number_rate = 5,
-			material = "metal",
-			{ "special_type", {
-				storm = 1
-			} }
-		}
-	elseif wtype == "magestaff" or wtype == "staff" then
-		weapon = adjustStats {
-			category = "melee_weapon",
-			range = "melee",
-			name = "magestaff",
-			user_name = "magestaff",
-			description = _ "magestaff",
-			icon = "staff-magic",
-			ground_icon = "magestaff",
-			type = "impact",
-			class = "bludgeon",
-			class_description = "Bludgeon",
-			damage = 7,
-			evade_adjust = -2,
-			body_damage_rate = 30,
-			deft_damage_rate = 10,
-			body_number_rate = 5,
-			material = "wood",
-			{ "special_type", {
-				storm = 1
-			} }
-		}
-		weapon = addMagicAdjust("human_magic_adjust", 20, weapon)
-	elseif wtype == "necrostaff" then
-		weapon = adjustStats {
-			category = "melee_weapon",
-			range = "melee",
-			name = "magestaff",
-			user_name = "necrostaff",
-			description = _ "necromancer staff",
-			icon = "staff-necromantic",
-			ground_icon = "magestaff",
-			type = "impact",
-			class = "bludgeon",
-			class_description = "Bludgeon",
-			damage = 7,
-			evade_adjust = -2,
-			body_damage_rate = 30,
-			deft_damage_rate = 10,
-			body_number_rate = 5,
-			material = "wood",
-			{ "special_type", {
-				plague_wbd = 1,
-				storm = 1
-			} }
-		}
-		weapon = addMagicAdjust("dark_magic_adjust", 15, weapon)
-	elseif wtype == "plague staff" then
-		weapon = adjustStats {
-			category = "melee_weapon",
-			range = "melee",
-			name = "magestaff",
-			user_name = "necrostaff",
-			description = _ "necromancer staff",
-			icon = "staff-necromantic",
-			ground_icon = "magestaff",
-			type = "impact",
-			class = "bludgeon",
-			class_description = "Bludgeon",
-			damage = 7,
-			evade_adjust = -2,
-			body_damage_rate = 30,
-			deft_damage_rate = 10,
-			body_number_rate = 5,
-			material = "wood",
-			{ "special_type", {
-				plague = 1,
-				storm = 1
-			} }
-		}
-		weapon = addMagicAdjust("dark_magic_adjust", 15, weapon)
-	elseif wtype == "pike" or wtype == "halberd" or wtype == "trident" then
-		weapon = adjustStats {
-			category = "melee_weapon",
-			range = "melee",
-			name = "spear",
-			user_name = "pike",
-			description = _ "pike",
-			icon = "pike",
-			ground_icon = "spear-fancy",
-			type = "pierce",
-			class = "polearm",
-			class_description = "Polearm",
-			damage = 9,
-			number = 2,
-			evade_adjust = -2,
-			body_damage_rate = 10,
-			deft_damage_rate = 10,
-			body_number_rate = 5,
-			deft_number_rate = 5,
-			material = "metal",
-			{ "special_type", {
-				ensnare = 1,
-				firststrike = 1,
-				pointpike = 1
-			} }
-		}
-	elseif wtype == "pitchfork" then
-		weapon = adjustStats {
-			category = "melee_weapon",
-			range = "melee",
-			name = "spear",
-			user_name = "pitchfork",
-			description = _ "pitchfork",
-			icon = "pitchfork",
-			ground_icon = "pitchfork",
-			type = "pierce",
-			class = "polearm",
-			class_description = "Polearm",
-			damage = 5,
-			number = 2,
-			evade_adjust = -1,
-			body_damage_rate = 10,
-			deft_damage_rate = 10,
-			body_number_rate = 5,
-			deft_number_rate = 5,
-			material = "metal",
-			{ "special_type", {
-				throwable = 1,
-				pointpike = 1
-			} },
-			{ "thrown", adjustCoreStats {
-				category = "ranged_weapon",
-				range = "ranged",
-				name = "javelin",
-				user_name = "javelin",
-				description = _ "pitchfork",
-				icon = "pitchfork",
-				type = "pierce",
-				class = "javelin",
-				class_description = "Javelin",
-				damage = 4,
-				body_damage_rate = 20,
-				deft_damage_rate = 20,
-				body_number_rate = 5,
-				{ "special_type", {
-					remaining_ammo_javelin = 1
-				} }
-			} }
-		}
-	elseif wtype == "runic_hammer" then
-		weapon = adjustStats {
-			category = "melee_weapon",
-			range = "melee",
-			name = "magestaff",
-			user_name = "hammer",
-			description = _ "runic hammer",
-			icon = "hammer-dwarven-runic",
-			ground_icon = "hammer-runic",
-			type = "impact",
-			class = "bludgeon",
-			class_description = "Bludgeon",
-			damage = 7,
-			evade_adjust = -2,
-			body_damage_rate = 30,
-			deft_damage_rate = 10,
-			body_number_rate = 5,
-			material = "metal",
-			{ "special_type", {
-				storm = 1
-			} }
-		}
-		weapon = addMagicAdjust("runic_magic_adjust", 20, weapon)
-	elseif wtype == "saber" then
-		weapon = adjustStats {
-			category = "melee_weapon",
-			range = "melee",
-			name = "sword",
-			user_name = "saber",
-			description = _ "saber",
-			icon = "saber-human",
-			ground_icon = "saber",
-			type = "blade",
-			class = "light_blade",
-			class_description = "Light Blade",
-			damage = 6,
-			number = 2,
-			body_damage_rate = 5,
-			deft_damage_rate = 15,
-			deft_number_rate = 10,
-			material = "metal",
-			{ "special_type", {
-				riposte = 1,
-				slashdash = 1
-			} }
-		}
-	elseif wtype == "scimitar" then
-		weapon = adjustStats {
-			category = "melee_weapon",
-			range = "melee",
-			name = "sword",
-			user_name = "sword",
-			description = _ "scimitar",
-			icon = "sword-elven",
-			ground_icon = "sword",
-			type = "blade",
-			class = "heavy_blade",
-			class_description = "Heavy Blade",
-			damage = 7,
-			number = 2,
-			evade_adjust = -2,
-			body_damage_rate = 5,
-			deft_damage_rate = 15,
-			body_number_rate = 5,
-			deft_number_rate = 5,
-			material = "metal",
-			{ "special_type", {
-				cleave = 1
-			} }
-		}
-	elseif wtype == "scythe" then
-		weapon = adjustStats {
-			category = "melee_weapon",
-			range = "melee",
-			name = "axe",
-			user_name = "scythe",
-			description = _ "scythe",
-			icon = "scythe",
-			ground_icon = "hatchet",
-			type = "blade",
-			class = "heavy_blade",
-			class_description = "Heavy Blade",
-			damage = 6,
-			number = 2,
-			evade_adjust = -3,
-			body_damage_rate = 15,
-			deft_damage_rate = 5,
-			body_number_rate = 10,
-			material = "metal",
-			{ "special_type", {
-				cleave = 1
-			} }
-		}
-	elseif wtype == "sling" then
-		weapon = adjustStats {
-			category = "ranged_weapon",
-			range = "ranged",
-			name = "sling",
-			user_name = "sling",
-			description = _ "sling",
-			icon = "sling",
-			ground_icon = "sling",
-			type = "impact",
-			class = "lob",
-			class_description = "Lob",
-			damage = 3,
-			body_damage_rate = 20,
-			deft_damage_rate = 20,
-			deft_number_rate = 5,
-			material = "cloth",
-			{ "special_type", {
-				goliath_bane = 1
-			} }
-		}
-	elseif wtype == "spear" or wtype == "lance" then
-		weapon = adjustStats {
-			category = "melee_weapon",
-			range = "melee",
-			name = "spear",
-			user_name = "spear",
-			description = _ "spear",
-			icon = "spear",
-			ground_icon = "spear-fancy",
-			type = "pierce",
-			class = "polearm",
-			class_description = "Polearm",
-			damage = 7,
-			number = 2,
-			evade_adjust = -1,
-			body_damage_rate = 10,
-			deft_damage_rate = 10,
-			body_number_rate = 5,
-			deft_number_rate = 5,
-			material = "metal",
-			{ "special_type", {
-				throwable = 1,
-				firststrike = 1,
-				pointpike = 1
-			} },
-			{ "thrown", adjustCoreStats {
-				category = "ranged_weapon",
-				range = "ranged",
-				name = "javelin",
-				user_name = "javelin",
-				description = _ "thrown spear",
-				icon = "javelin-human",
-				type = "pierce",
-				class = "javelin",
-				class_description = "Javelin",
-				damage = 5,
-				body_damage_rate = 20,
-				deft_damage_rate = 20,
-				body_number_rate = 5,
-				{ "special_type", {
-					remaining_ammo_javelin = 1
-				} }
-			} }
-		}
-	elseif wtype == "spiked_gauntlet" then
-		weapon = adjustStats {
-			category = "melee_weapon",
-			range = "melee",
-			name = "fist",
-			user_name = "spiked gauntlet",
-			description = _ "spiked gauntlet",
-			icon = "pike",
-			ground_icon = "gauntlets",
-			type = "pierce",
-			class = "bludgeon",
-			class_description = "Bludgeon",
-			damage = 5,
-			number = 2,
-			evade_adjust = -1,
-			body_damage_rate = 15,
-			deft_damage_rate = 5,
-			body_number_rate = 8,
-			deft_number_rate = 2,
-			material = "metal"
-		}
-	elseif wtype == "spirit_staff" then
-		weapon = adjustStats {
-			category = "melee_weapon",
-			range = "melee",
-			name = "magestaff",
-			user_name = "spirit_staff",
-			description = _ "spirit staff",
-			icon = "staff-magic",
-			ground_icon = "magestaff",
-			type = "impact",
-			class = "bludgeon",
-			class_description = "Bludgeon",
-			damage = 7,
-			evade_adjust = -2,
-			body_damage_rate = 30,
-			deft_damage_rate = 10,
-			body_number_rate = 5,
-			material = "wood",
-			{ "special_type", {
-				storm = 1
-			} }
-		}
-		weapon = addMagicAdjust("spirit_magic_adjust", 20, weapon)
-	elseif wtype == "sword" or wtype == "longsword" or wtype == "greatsword" or wtype == "short sword" then
-		weapon = adjustStats {
-			category = "melee_weapon",
-			range = "melee",
-			name = "sword",
-			user_name = "sword",
-			description = _ "sword",
-			icon = "sword-human",
-			ground_icon = "sword",
-			type = "blade",
-			class = "heavy_blade",
-			class_description = "Heavy Blade",
-			damage = 7,
-			number = 2,
-			evade_adjust = -2,
-			body_damage_rate = 15,
-			deft_damage_rate = 5,
-			body_number_rate = 5,
-			deft_number_rate = 5,
-			material = "metal",
-			{ "special_type", {
-				cleave = 1
-			} }
-		}
-	elseif wtype == "thrown_dagger" or wtype == "throwing knives" then
-		weapon = adjustStats {
-			category = "ranged_weapon",
-			range = "ranged",
-			name = "thrown-light-blade",
-			user_name = "dagger_thrown",
-			description = _ "thrown dagger",
-			icon = "dagger-thrown-human",
-			ground_icon = "dagger",
-			type = "blade",
-			class = "thrown_light_blade",
-			class_description = "Thrown Light Blade",
-			damage = 2,
-			number = 2,
-			body_damage_rate = 5,
-			deft_damage_rate = 15,
-			deft_number_rate = 10,
-			material = "metal",
-			{ "special_type", {
-				allow_poison = 1,
-				remaining_ammo_thrown_light_blade = 1
-			} }
-		}
-	elseif wtype == "thunderstick" then
-		weapon = adjustStats {
-			category = "ranged_weapon",
-			range = "ranged",
-			name = "thunderstick",
-			user_name = "thunderstick",
-			description = _ "thunderstick",
-			icon = "thunderstick",
-			ground_icon = "thunderstick",
-			type = "pierce",
-			class = "thunderstick",
-			class_description = "Thunderstick",
-			damage = 22,
-			max_damage = 22,
-			level = 1,
-			material = "composite"
-		}
-	elseif wtype == "whip" then
-		weapon = adjustStats {
-			category = "melee_weapon",
-			range = "melee",
-			name = "fist",
-			user_name = "whip",
-			description = _ "whip",
-			icon = "whip",
-			ground_icon = "sling",
-			type = "blade",
-			class = "none",
-			class_description = "Lash",
-			damage = 4,
-			number = 2,
-			evade_adjust = -1,
-			body_damage_rate = 5,
-			deft_damage_rate = 5,
-			deft_number_rate = 20,
-			material = "cloth"
-		}
-	elseif wtype == "fist" then
-		weapon = adjustStats {
-			category = "melee_weapon",
-			range = "melee",
-			undroppable = 1,
-			name = "fist",
-			user_name = "fist",
-			description = _ "fist",
-			icon = "fist-human",
-			ground_icon = "fist",
-			type = "impact",
-			class = "bludgeon",
-			class_description = "Bludgeon",
-			damage = 1,
-			number = 1,
-			evade_adjust = 0,
-			body_damage_rate = 20,
-			deft_damage_rate = 10,
-			body_number_rate = 0,
-			deft_number_rate = 10,
-			human_magic_adjust = 0,
-			dark_magic_adjust = 0,
-			faerie_magic_adjust = 0,
-			runic_magic_adjust = 0,
-			spirit_magic_adjust = 0,
-			material = "cloth"
-		}
-	elseif wtype == "claws" then
-		weapon = adjustStats {
-			category = "melee_weapon",
-			range = "melee",
-			undroppable = 1,
-			name = "fist",
-			user_name = "claws",
-			description = _ "claws",
-			icon = "claws",
-			ground_icon = "claws",
-			type = "blade",
-			class = "light_blade",
-			class_description = "Light Blade",
-			damage = 2,
-			number = 1,
-			evade_adjust = 0,
-			body_damage_rate = 10,
-			deft_damage_rate = 15,
-			body_number_rate = 0,
-			deft_number_rate = 15,
-			human_magic_adjust = 0,
-			dark_magic_adjust = 0,
-			faerie_magic_adjust = 0,
-			runic_magic_adjust = 0,
-			spirit_magic_adjust = 0,
-			material = "cloth",
-			{ "special_type", {
-				backstab = 1
-			} }
-		}
-	elseif wtype == "bite" then
-		weapon = adjustStats {
-			category = "melee_weapon",
-			range = "melee",
-			undroppable = 1,
-			name = "fist",
-			user_name = "bite",
-			description = _ "bite",
-			icon = "bite",
-			ground_icon = "bite",
-			type = "blade",
-			class = "light_blade",
-			class_description = "Light Blade",
-			damage = 2,
-			number = 1,
-			evade_adjust = 0,
-			body_damage_rate = 10,
-			deft_damage_rate = 15,
-			body_number_rate = 0,
-			deft_number_rate = 15,
-			human_magic_adjust = 0,
-			dark_magic_adjust = 0,
-			faerie_magic_adjust = 0,
-			runic_magic_adjust = 0,
-			spirit_magic_adjust = 0,
-			material = "cloth",
-			{ "special_type", {
-				drains = 1
-			} }
-		}
-	elseif wtype == "lob" then
-		weapon = adjustStats {
-			category = "ranged_weapon",
-			range = "ranged",
-			undroppable = 1,
-			name = "lob",
-			user_name = "lob",
-			description = _ "thrown rock",
-			icon = "rock_thrown",
-			ground_icon = "rock_thrown",
-			type = "impact",
-			class = "lob",
-			class_description = "Lob",
-			damage = 1,
-			number = 1,
-			body_damage_rate = 20,
-			body_number_rate = 0,
-			deft_damage_rate = 10,
-			deft_number_rate = 0,
-			human_magic_adjust = 0,
-			dark_magic_adjust = 0,
-			faerie_magic_adjust = 0,
-			runic_magic_adjust = 0,
-			spirit_magic_adjust = 0,
-			material = "cloth"
-		}
-	else
-		H.wml_error(string.format("invalid type= key in [create_weapon] (%s)", wtype))
+
+	-- NOTE: This isn't a true "arch-type" until we distill our weapons table and utilize proper
+	-- polymorphism to reduce it's size and eliminate data duplication. But for now, we'll call
+	-- call it an arch-type anyway
+	local arch_type = weapon_data.aliases[wtype] or H.wml_error(string.format("invalid type= key in [create_weapon] (%s)", wtype))
+	local weapon = {}
+	for k, v in pairs(weapon_data.table[arch_type]) do
+		if k ~= "names" then
+			weapon[k] = v
+		end
 	end
+
+-- 	std_print(dump_lua_value(weapon, "weapon"))
+	weapon = noarr_lua_table2wml(weapon)
+	weapon = adjustStats(weapon)
+	weapon = finalAdjust(weapon)
 	wml.variables[var] = finalAdjust(weapon)
 end
+
 function wesnoth.wml_actions.create_weapon(args)
 	local wtype = string.match(args.type, "[^%s]+") or H.wml_error("[create_weapon] requires a type= key")
 	local rank = args.rank or 0
@@ -2378,882 +2454,8 @@ end
 
 
 function dump_weapon_table()
-	local t = {
-		{
-			names = {"axe", "battle axe"},
-			category = "melee_weapon",
-			range = "melee",
-			name = "axe",
-			user_name = "axe",
-			description = _ "axe",
-			icon = "axe",
-			ground_icon = "axe",
-			type = "blade",
-			class = "heavy_blade",
-			class_description = "Heavy Blade",
-			damage = 11,
-			evade_adjust = -3,
-			body_damage_rate = 30,
-			deft_damage_rate = 10,
-			body_number_rate = 5,
-			material = "metal",
-			special_type = {
-				cleave = 1
-			}
-		}, {
-			names = {"bow", "longbow"},
-			category = "ranged_weapon",
-			range = "ranged",
-			name = "bow",
-			user_name = "bow",
-			description = _ "bow",
-			icon = "bow",
-			ground_icon = "bow",
-			type = "pierce",
-			class = "bow",
-			class_description = "Bow",
-			damage = 4,
-			number = 2,
-			deft_damage_rate = 20,
-			deft_number_rate = 10,
-			material = "wood",
-			special_type = {
-				marksman = 1,
-				fire_shot_bow = 1,
-				remaining_ammo_bow = 1
-			}
-		}, {
-			names = {"chakram"},
-			category = "ranged_weapon",
-			range = "ranged",
-			name = "lob",
-			user_name = "chakram",
-			description = _ "chakram",
-			icon = "chakram",
-			ground_icon = "hatchet",
-			type = "blade",
-			class = "thrown_heavy_blade",
-			class_description = "Thrown Heavy Blade",
-			damage = 5,
-			body_damage_rate = 20,
-			deft_damage_rate = 20,
-			body_number_rate = 5,
-			material = "metal"
-		}, {
-			names = {"cleaver"},
-			category = "melee_weapon",
-			range = "melee",
-			name = "axe",
-			user_name = "cleaver",
-			description = _ "cleaver",
-			icon = "cleaver",
-			ground_icon = "cleaver",
-			type = "blade",
-			class = "heavy_blade",
-			class_description = "Heavy Blade",
-			damage = 5,
-			number = 2,
-			evade_adjust = -3,
-			body_damage_rate = 15,
-			deft_damage_rate = 5,
-			body_number_rate = 5,
-			deft_number_rate = 5,
-			material = "metal",
-			special_type = {
-				cleave = 1
-			}
-		}, {
-			names = {"club"},
-			category = "melee_weapon",
-			range = "melee",
-			name = "mace",
-			user_name = "club",
-			description = _ "club",
-			icon = "club-small",
-			ground_icon = "club",
-			type = "impact",
-			class = "bludgeon",
-			class_description = "Bludgeon",
-			damage = 3,
-			number = 2,
-			evade_adjust = -2,
-			body_damage_rate = 15,
-			deft_damage_rate = 5,
-			body_number_rate = 5,
-			deft_number_rate = 5,
-			material = "wood",
-			special_type = {
-				storm = 1
-			}
-		}, {
-			names = {"crossbow"},
-			category = "ranged_weapon",
-			range = "ranged",
-			name = "crossbow",
-			user_name = "crossbow",
-			description = _ "crossbow",
-			icon = "crossbow-human",
-			ground_icon = "crossbow",
-			type = "pierce",
-			class = "crossbow",
-			class_description = "Crossbow",
-			damage = 8,
-			deft_damage_rate = 20,
-			material = "wood",
-			special_type = {
-				readied_bolt = 1,
-				fire_shot_xbow = 1
-			}
-		}, {
-			names = {"dagger"},
-			category = "melee_weapon",
-			range = "melee",
-			name = "dagger",
-			user_name = "dagger",
-			description = _ "dagger",
-			icon = "dagger-human",
-			ground_icon = "dagger",
-			type = "blade",
-			class = "light_blade",
-			class_description = "Light Blade",
-			damage = 4,
-			number = 2,
-			body_damage_rate = 5,
-			deft_damage_rate = 15,
-			deft_number_rate = 10,
-			material = "metal",
-			special_type = {
-				backstab = 1,
-				soultrap = 1
-			}
-		}, {
-			names = {"dart"},
-			category = "ranged_weapon",
-			range = "ranged",
-			name = "thrown-light-blade",
-			user_name = "dagger-thrown",
-			description = _ "dart",
-			icon = "dagger-thrown-human",
-			ground_icon = "dagger",
-			type = "pierce",
-			class = "thrown_light_blade",
-			class_description = "Thrown Light Blade",
-			damage = 2,
-			number = 2,
-			body_damage_rate = 5,
-			deft_damage_rate = 15,
-			deft_number_rate = 10,
-			material = "metal",
-			special_type = {
-				allow_poison = 1,
-				remaining_ammo_thrown_light_blade = 1
-			}
-		}, {
-			names = {"epee"},
-			category = "melee_weapon",
-			range = "melee",
-			name = "sword",
-			user_name = "epee",
-			description = _ "epee",
-			icon = "saber-human",
-			ground_icon = "saber",
-			type = "pierce",
-			class = "light_blade",
-			class_description = "Light Blade",
-			damage = 4,
-			number = 2,
-			body_damage_rate = 5,
-			deft_damage_rate = 15,
-			deft_number_rate = 10,
-			material = "metal",
-			special_type = {
-				riposte = 1,
-				slashdash = 1
-			}
-		}, {
-			names = {"faerie_staff"},
-			category = "melee_weapon",
-			range = "melee",
-			name = "magestaff",
-			user_name = "magestaff",
-			description = _ "faerie staff",
-			icon = "staff-elven",
-			ground_icon = "magestaff",
-			type = "impact",
-			class = "bludgeon",
-			class_description = "Bludgeon",
-			damage = 7,
-			evade_adjust = -2,
-			body_damage_rate = 30,
-			deft_damage_rate = 10,
-			body_number_rate = 5,
-			material = "wood",
-			faerie_magic_adjust = 10,
-			special_type = {
-				storm = 1
-			}
-		}, {
-			names = {"glaive"},
-			category = "melee_weapon",
-			range = "melee",
-			name = "spear",
-			user_name = "glaive",
-			description = _ "glaive",
-			icon = "spear",
-			ground_icon = "spear-fancy",
-			type = "blade",
-			class = "polearm",
-			class_description = "Polearm",
-			damage = 7,
-			number = 2,
-			evade_adjust = -2,
-			body_damage_rate = 10,
-			deft_damage_rate = 10,
-			body_number_rate = 5,
-			deft_number_rate = 5,
-			material = "metal"
-		}, {
-			names = {"hammer"},
-			category = "melee_weapon",
-			range = "melee",
-			name = "mace",
-			user_name = "hammer",
-			description = _ "hammer",
-			icon = "hammer-dwarven",
-			ground_icon = "hammer-runic",
-			type = "impact",
-			class = "bludgeon",
-			class_description = "Bludgeon",
-			damage = 11,
-			evade_adjust = -3,
-			body_damage_rate = 25,
-			deft_damage_rate = 15,
-			body_number_rate = 5,
-			material = "metal",
-			special_type = {
-				storm = 1
-			}
-		}, {
-			names = {"hatchet"},
-			category = "ranged_weapon",
-			range = "ranged",
-			name = "lob",
-			user_name = "hatchet",
-			description = _ "thrown hatchet",
-			icon = "hatchet",
-			ground_icon = "hatchet",
-			type = "blade",
-			class = "thrown_heavy_blade",
-			class_description = "Thrown Heavy Blade",
-			damage = 7,
-			body_damage_rate = 20,
-			deft_damage_rate = 20,
-			body_number_rate = 5,
-			material = "metal",
-			special_type = {
-				remaining_ammo_thrown_heavy_blade = 1
-			}
-		}, {
-			names = {"javelin"},
-			category = "ranged_weapon",
-			range = "ranged",
-			name = "javelin",
-			user_name = "javelin",
-			description = _ "javelin",
-			icon = "javelin-human",
-			ground_icon = "spear-fancy",
-			type = "pierce",
-			class = "javelin",
-			class_description = "Javelin",
-			damage = 7,
-			body_damage_rate = 20,
-			deft_damage_rate = 20,
-			deft_number_rate = 5,
-			material = "metal",
-			special_type = {
-				remaining_ammo_javelin = 1
-			}
-		}, {
-			names = {"kusarigama"},
-			category = "melee_weapon",
-			range = "melee",
-			name = "axe",
-			user_name = "kusarigama",
-			description = _ "kusarigama",
-			icon = "scythe",
-			ground_icon = "hatchet",
-			type = "blade",
-			class = "heavy_blade",
-			class_description = "Heavy Blade",
-			damage = 2,
-			number = 3,
-			evade_adjust = -3,
-			body_damage_rate = 15,
-			deft_damage_rate = 5,
-			body_number_rate = 5,
-			deft_number_rate = 5,
-			material = "metal",
-			special_type = {
-				allow_poison = 1,
-				throwable = 1
-			}
-		}, {
-			names = {"mace", "mace-spiked", "flail"},
-			category = "melee_weapon",
-			range = "melee",
-			name = "mace",
-			user_name = "mace",
-			description = _ "mace",
-			icon = "mace",
-			ground_icon = "mace",
-			type = "impact",
-			class = "bludgeon",
-			class_description = "Bludgeon",
-			damage = 11,
-			evade_adjust = -3,
-			body_damage_rate = 40,
-			body_number_rate = 5,
-			material = "metal",
-			special_type = {
-				storm = 1
-			}
-		}, {
-			names = {"magestaff", "staff"},
-			category = "melee_weapon",
-			range = "melee",
-			name = "magestaff",
-			user_name = "magestaff",
-			description = _ "magestaff",
-			icon = "staff-magic",
-			ground_icon = "magestaff",
-			type = "impact",
-			class = "bludgeon",
-			class_description = "Bludgeon",
-			damage = 7,
-			evade_adjust = -2,
-			body_damage_rate = 30,
-			deft_damage_rate = 10,
-			body_number_rate = 5,
-			material = "wood",
-			human_magic_adjust = 20,
-			special_type = {
-				storm = 1
-			}
-		}, {
-			names = {"necrostaff"},
-			category = "melee_weapon",
-			range = "melee",
-			name = "magestaff",
-			user_name = "necrostaff",
-			description = _ "necromancer staff",
-			icon = "staff-necromantic",
-			ground_icon = "magestaff",
-			type = "impact",
-			class = "bludgeon",
-			class_description = "Bludgeon",
-			damage = 7,
-			evade_adjust = -2,
-			body_damage_rate = 30,
-			deft_damage_rate = 10,
-			body_number_rate = 5,
-			material = "wood",
-			dark_magic_adjust = 15,
-			special_type = {
-				plague_wbd = 1,
-				storm = 1
-			}
-		}, {
-			names = {"plague staff"},
-			category = "melee_weapon",
-			range = "melee",
-			name = "magestaff",
-			user_name = "necrostaff",
-			description = _ "necromancer staff",
-			icon = "staff-necromantic",
-			ground_icon = "magestaff",
-			type = "impact",
-			class = "bludgeon",
-			class_description = "Bludgeon",
-			damage = 7,
-			evade_adjust = -2,
-			body_damage_rate = 30,
-			deft_damage_rate = 10,
-			body_number_rate = 5,
-			material = "wood",
-			dark_magic_adjust = 15,
-			special_type = {
-				plague = 1,
-				storm = 1
-			}
-		}, {
-			names = {"pike", "halberd", "trident"},
-			category = "melee_weapon",
-			range = "melee",
-			name = "spear",
-			user_name = "pike",
-			description = _ "pike",
-			icon = "pike",
-			ground_icon = "spear-fancy",
-			type = "pierce",
-			class = "polearm",
-			class_description = "Polearm",
-			damage = 9,
-			number = 2,
-			evade_adjust = -2,
-			body_damage_rate = 10,
-			deft_damage_rate = 10,
-			body_number_rate = 5,
-			deft_number_rate = 5,
-			material = "metal",
-			special_type = {
-				ensnare = 1,
-				firststrike = 1,
-				pointpike = 1
-			}
-		}, {
-			names = {"pitchfork"},
-			category = "melee_weapon",
-			range = "melee",
-			name = "spear",
-			user_name = "pitchfork",
-			description = _ "pitchfork",
-			icon = "pitchfork",
-			ground_icon = "pitchfork",
-			type = "pierce",
-			class = "polearm",
-			class_description = "Polearm",
-			damage = 5,
-			number = 2,
-			evade_adjust = -1,
-			body_damage_rate = 10,
-			deft_damage_rate = 10,
-			body_number_rate = 5,
-			deft_number_rate = 5,
-			material = "metal",
-			special_type = {
-				throwable = 1,
-				pointpike = 1
-			}
-		}, {
-			names = {"runic_hammer"},
-			category = "melee_weapon",
-			range = "melee",
-			name = "magestaff",
-			user_name = "hammer",
-			description = _ "runic hammer",
-			icon = "hammer-dwarven-runic",
-			ground_icon = "hammer-runic",
-			type = "impact",
-			class = "bludgeon",
-			class_description = "Bludgeon",
-			damage = 7,
-			evade_adjust = -2,
-			body_damage_rate = 30,
-			deft_damage_rate = 10,
-			body_number_rate = 5,
-			material = "metal",
-			runic_magic_adjust = 20,
-			special_type = {
-				storm = 1
-			}
-		}, {
-			names = {"saber"},
-			category = "melee_weapon",
-			range = "melee",
-			name = "sword",
-			user_name = "saber",
-			description = _ "saber",
-			icon = "saber-human",
-			ground_icon = "saber",
-			type = "blade",
-			class = "light_blade",
-			class_description = "Light Blade",
-			damage = 6,
-			number = 2,
-			body_damage_rate = 5,
-			deft_damage_rate = 15,
-			deft_number_rate = 10,
-			material = "metal",
-			special_type = {
-				riposte = 1,
-				slashdash = 1
-			}
-		}, {
-			names = {"scimitar"},
-			category = "melee_weapon",
-			range = "melee",
-			name = "sword",
-			user_name = "sword",
-			description = _ "scimitar",
-			icon = "sword-elven",
-			ground_icon = "sword",
-			type = "blade",
-			class = "heavy_blade",
-			class_description = "Heavy Blade",
-			damage = 7,
-			number = 2,
-			evade_adjust = -2,
-			body_damage_rate = 5,
-			deft_damage_rate = 15,
-			body_number_rate = 5,
-			deft_number_rate = 5,
-			material = "metal",
-			special_type = {
-				cleave = 1
-			}
-		}, {
-			names = {"scythe"},
-			category = "melee_weapon",
-			range = "melee",
-			name = "axe",
-			user_name = "scythe",
-			description = _ "scythe",
-			icon = "scythe",
-			ground_icon = "hatchet",
-			type = "blade",
-			class = "heavy_blade",
-			class_description = "Heavy Blade",
-			damage = 6,
-			number = 2,
-			evade_adjust = -3,
-			body_damage_rate = 15,
-			deft_damage_rate = 5,
-			body_number_rate = 10,
-			material = "metal",
-			special_type = {
-				cleave = 1
-			}
-		}, {
-			names = {"sling"},
-			category = "ranged_weapon",
-			range = "ranged",
-			name = "sling",
-			user_name = "sling",
-			description = _ "sling",
-			icon = "sling",
-			ground_icon = "sling",
-			type = "impact",
-			class = "lob",
-			class_description = "Lob",
-			damage = 3,
-			body_damage_rate = 20,
-			deft_damage_rate = 20,
-			deft_number_rate = 5,
-			material = "cloth",
-			special_type = {
-				goliath_bane = 1
-			}
-		}, {
-			names = {"spear", "lance"},
-			category = "melee_weapon",
-			range = "melee",
-			name = "spear",
-			user_name = "spear",
-			description = _ "spear",
-			icon = "spear",
-			ground_icon = "spear-fancy",
-			type = "pierce",
-			class = "polearm",
-			class_description = "Polearm",
-			damage = 7,
-			number = 2,
-			evade_adjust = -1,
-			body_damage_rate = 10,
-			deft_damage_rate = 10,
-			body_number_rate = 5,
-			deft_number_rate = 5,
-			material = "metal",
-			special_type = {
-				throwable = 1,
-				firststrike = 1,
-				pointpike = 1
-			}
-		}, {
-			names = {"spiked_gauntlet"},
-			category = "melee_weapon",
-			range = "melee",
-			name = "fist",
-			user_name = "spiked gauntlet",
-			description = _ "spiked gauntlet",
-			icon = "pike",
-			ground_icon = "gauntlets",
-			type = "pierce",
-			class = "bludgeon",
-			class_description = "Bludgeon",
-			damage = 5,
-			number = 2,
-			evade_adjust = -1,
-			body_damage_rate = 15,
-			deft_damage_rate = 5,
-			body_number_rate = 8,
-			deft_number_rate = 2,
-			material = "metal"
-		}, {
-			names = {"spirit_staff"},
-			category = "melee_weapon",
-			range = "melee",
-			name = "magestaff",
-			user_name = "spirit_staff",
-			description = _ "spirit staff",
-			icon = "staff-magic",
-			ground_icon = "magestaff",
-			type = "impact",
-			class = "bludgeon",
-			class_description = "Bludgeon",
-			damage = 7,
-			evade_adjust = -2,
-			body_damage_rate = 30,
-			deft_damage_rate = 10,
-			body_number_rate = 5,
-			material = "wood",
-			spirit_magic_adjust = 20,
-			special_type = {
-				storm = 1
-			}
-		}, {
-			names = {"sword", "longsword", "greatsword", "short sword"},
-			category = "melee_weapon",
-			range = "melee",
-			name = "sword",
-			user_name = "sword",
-			description = _ "sword",
-			icon = "sword-human",
-			ground_icon = "sword",
-			type = "blade",
-			class = "heavy_blade",
-			class_description = "Heavy Blade",
-			damage = 7,
-			number = 2,
-			evade_adjust = -2,
-			body_damage_rate = 15,
-			deft_damage_rate = 5,
-			body_number_rate = 5,
-			deft_number_rate = 5,
-			material = "metal",
-			special_type = {
-				cleave = 1
-			}
-		}, {
-			names = {"thrown_dagger", "throwing knives"},
-			category = "ranged_weapon",
-			range = "ranged",
-			name = "thrown-light-blade",
-			user_name = "dagger_thrown",
-			description = _ "thrown dagger",
-			icon = "dagger-thrown-human",
-			ground_icon = "dagger",
-			type = "blade",
-			class = "thrown_light_blade",
-			class_description = "Thrown Light Blade",
-			damage = 2,
-			number = 2,
-			body_damage_rate = 5,
-			deft_damage_rate = 15,
-			deft_number_rate = 10,
-			material = "metal",
-			special_type = {
-				allow_poison = 1,
-				remaining_ammo_thrown_light_blade = 1
-			}
-		}, {
-			names = {"thunderstick"},
-			category = "ranged_weapon",
-			range = "ranged",
-			name = "thunderstick",
-			user_name = "thunderstick",
-			description = _ "thunderstick",
-			icon = "thunderstick",
-			ground_icon = "thunderstick",
-			type = "pierce",
-			class = "thunderstick",
-			class_description = "Thunderstick",
-			damage = 22,
-			max_damage = 22,
-			level = 1,
-			material = "composite"
-		}, {
-			names = {"whip"},
-			category = "melee_weapon",
-			range = "melee",
-			name = "fist",
-			user_name = "whip",
-			description = _ "whip",
-			icon = "whip",
-			ground_icon = "sling",
-			type = "blade",
-			class = "none",
-			class_description = "Lash",
-			damage = 4,
-			number = 2,
-			evade_adjust = -1,
-			body_damage_rate = 5,
-			deft_damage_rate = 5,
-			deft_number_rate = 20,
-			material = "cloth"
-		}, {
-			names = {"fist"},
-			category = "melee_weapon",
-			range = "melee",
-			undroppable = 1,
-			name = "fist",
-			user_name = "fist",
-			description = _ "fist",
-			icon = "fist-human",
-			ground_icon = "fist",
-			type = "impact",
-			class = "bludgeon",
-			class_description = "Bludgeon",
-			damage = 1,
-			number = 1,
-			evade_adjust = 0,
-			body_damage_rate = 20,
-			deft_damage_rate = 10,
-			body_number_rate = 0,
-			deft_number_rate = 10,
-			human_magic_adjust = 0,
-			dark_magic_adjust = 0,
-			faerie_magic_adjust = 0,
-			runic_magic_adjust = 0,
-			spirit_magic_adjust = 0,
-			material = "cloth"
-		}, {
-			names = {"claws"},
-			category = "melee_weapon",
-			range = "melee",
-			undroppable = 1,
-			name = "fist",
-			user_name = "claws",
-			description = _ "claws",
-			icon = "claws",
-			ground_icon = "claws",
-			type = "blade",
-			class = "light_blade",
-			class_description = "Light Blade",
-			damage = 2,
-			number = 1,
-			evade_adjust = 0,
-			body_damage_rate = 10,
-			deft_damage_rate = 15,
-			body_number_rate = 0,
-			deft_number_rate = 15,
-			human_magic_adjust = 0,
-			dark_magic_adjust = 0,
-			faerie_magic_adjust = 0,
-			runic_magic_adjust = 0,
-			spirit_magic_adjust = 0,
-			material = "cloth",
-			special_type = {
-				backstab = 1
-			}
-		}, {
-			names = {"bite"},
-			category = "melee_weapon",
-			range = "melee",
-			undroppable = 1,
-			name = "fist",
-			user_name = "bite",
-			description = _ "bite",
-			icon = "bite",
-			ground_icon = "bite",
-			type = "blade",
-			class = "light_blade",
-			class_description = "Light Blade",
-			damage = 2,
-			number = 1,
-			evade_adjust = 0,
-			body_damage_rate = 10,
-			deft_damage_rate = 15,
-			body_number_rate = 0,
-			deft_number_rate = 15,
-			human_magic_adjust = 0,
-			dark_magic_adjust = 0,
-			faerie_magic_adjust = 0,
-			runic_magic_adjust = 0,
-			spirit_magic_adjust = 0,
-			material = "cloth",
-			special_type = {
-				drains = 1
-			}
-		}, {
-			names = {"lob"},
-			category = "ranged_weapon",
-			range = "ranged",
-			undroppable = 1,
-			name = "lob",
-			user_name = "lob",
-			description = _ "thrown rock",
-			icon = "rock_thrown",
-			ground_icon = "rock_thrown",
-			type = "impact",
-			class = "lob",
-			class_description = "Lob",
-			damage = 1,
-			number = 1,
-			body_damage_rate = 20,
-			body_number_rate = 0,
-			deft_damage_rate = 10,
-			deft_number_rate = 0,
-			human_magic_adjust = 0,
-			dark_magic_adjust = 0,
-			faerie_magic_adjust = 0,
-			runic_magic_adjust = 0,
-			spirit_magic_adjust = 0,
-			material = "cloth"
-		}
-	}
+	local t = {}
 
-	local specials = {
-		"allow_poison",
-		"backstab",
-		"cleave",
-		"drains",
-		"ensnare",
-		"fire_shot_bow",
-		"fire_shot_xbow",
-		"firststrike",
-		"goliath_bane",
-		"marksman",
-		"plague",
-		"plague_wbd",
-		"pointpike",
-		"readied_bolt",
-		"remaining_ammo_bow",
-		"remaining_ammo_javelin",
-		"remaining_ammo_thrown_heavy_blade",
-		"remaining_ammo_thrown_light_blade",
-		"riposte",
-		"slashdash",
-		"soultrap",
-		"storm",
-		"throwable"
-	}
-
-	local fields = {
-		"name",
-		"category",
-		"range",
-		"user_name",
-		"description",
-		"icon",
-		"ground_icon",
-		"type",
-		"class",
-		"class_description",
-		"damage",
-		"evade_adjust",
-		"body_damage_rate",
-		"deft_damage_rate",
-		"body_number_rate",
-		"deft_number_rate",
-		"material",
-		"number",
-		"undroppable",
-		"human_magic_adjust",
-		"dark_magic_adjust",
-		"faerie_magic_adjust",
-		"runic_magic_adjust",
-		"spirit_magic_adjust"
-	}
 	local i, j
 	local s = ""
 	std_print(dump_lua_value(t, "weapons"))
@@ -3327,7 +2529,7 @@ function update_loot_menu(x, y)
 	local last_item
 
 
-	if x < 0 or y < 0 or x > 500 or y > 500 then return end
+	if x < 1 or y < 1 or x > 500 or y > 500 then return end
 -- 	std_print(dump_lua_value(unit, "unit"))
 -- 	if not unit or not unit.canrecruit then return end
 	local locs = {}
@@ -3338,7 +2540,7 @@ function update_loot_menu(x, y)
 	table.insert(locs, {x, y})
 -- 	std_print(dump_lua_value(locs, "locs"))
 
-	for i, loc in ipairs(locs) do
+	for i,loc in ipairs(locs) do
 		local items_var = string.format("ground.x%d.y%d.items", loc[1], loc[2])
 		local count = wml.variables[items_var .. ".length"]
 		local items = wml.array_access.get(items_var)
