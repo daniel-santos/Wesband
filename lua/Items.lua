@@ -860,6 +860,64 @@ weapon_data = {
 			material = "cloth"
 		}
 	},
+	throwable = {
+		pitchfork = {
+			category = "ranged_weapon",
+			range = "ranged",
+			name = "javelin",
+			user_name = "javelin",
+			description = _ "pitchfork",
+			icon = "pitchfork",
+			type = "pierce",
+			class = "javelin",
+			class_description = "Javelin",
+			damage = 4,
+			body_damage_rate = 20,
+			deft_damage_rate = 20,
+			body_number_rate = 5,
+			special_type = {
+				remaining_ammo_javelin = 1
+			}
+		},
+		spear = {
+			category = "ranged_weapon",
+			range = "ranged",
+			name = "javelin",
+			user_name = "javelin",
+			description = _ "thrown spear",
+			icon = "javelin-human",
+			type = "pierce",
+			class = "javelin",
+			class_description = "Javelin",
+			damage = 5,
+			body_damage_rate = 20,
+			deft_damage_rate = 20,
+			body_number_rate = 5,
+			special_type = {
+				remaining_ammo_javelin = 1
+			}
+		},
+		kusarigama = {
+			category = "ranged_weapon",
+			range = "ranged",
+			name = "lob",
+			user_name = "kusarigama",
+			description = _ "kusarigama",
+			icon = "scythe",
+			type = "blade",
+			class = "thrown_heavy_blade",
+			class_description = "Thrown Heavy Blade",
+			damage = 3,
+			number = 1,
+			body_damage_rate = 30,
+			deft_damage_rate = 10,
+			body_number_rate = 5,
+			deft_number_rate = 0,
+			special_type = {
+				slow = 1
+			}
+		}
+	},
 	aliases = {
 		["axe"]				= "axe",
 		["battle axe"]		= "axe",
@@ -1386,8 +1444,12 @@ local function createWeapon(wtype, level, attr, var)
 		end
 	end
 
--- 	std_print(dump_lua_value(weapon, "weapon"))
+	if weapon_data.throwable[arch_type] then
+		weapon.thrown = weapon_data.throwable[arch_type]
+	end
+
 	weapon = noarr_lua_table2wml(weapon)
+-- 	std_print(dump_lua_value(weapon, "weapon"))
 	weapon = adjustStats(weapon)
 	weapon = finalAdjust(weapon)
 	wml.variables[var] = finalAdjust(weapon)
