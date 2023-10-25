@@ -3039,3 +3039,17 @@ function wesnoth.wml_actions.set_default_abilities(cfg)
 		wml.variables[var] = unparse_container(v)
 	end
 end
+
+function wesnoth.wml_actions.unit_init_terrain(cfg)
+    local src = cfg.src or H.wml_error("[unit_init_terrain] requires a src= key")
+    local dest = cfg.dest or H.wml_error("[unit_init_terrain] requires a dest= key")
+    local result = {}
+    local k, v
+
+    for k,v in pairs(wml.variables[src]) do
+        local arr = tostring(v):split(",")
+        local defense, movement = tonumber(arr[1]), tonumber(arr[2])
+        table.insert(result, {k, {defense = defense, movement = movement}})
+    end
+    wml.variables[dest] = result
+end
