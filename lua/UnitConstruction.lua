@@ -3041,12 +3041,28 @@ function wesnoth.wml_actions.set_default_abilities(cfg)
 end
 
 function wesnoth.wml_actions.unit_init_terrain(cfg)
-    local src = cfg.src or H.wml_error("[unit_init_terrain] requires a src= key")
+    local src_var = cfg.src
     local dest = cfg.dest or H.wml_error("[unit_init_terrain] requires a dest= key")
+    local mode = cfg.mode or "replace"
     local result = {}
-    local k, v
+    local src, k, v
 
-    for k,v in pairs(wml.variables[src]) do
+    for k,v in ipairs(wml.parsed(cfg)) do
+        if type(v) == "table" and type(v[1]) == "string" and type(v[2]) == "table" and v[1] == "terrain" then
+            src = v[2]
+            break
+        end
+    end
+
+    if src_var and src then
+        H.wml_error("[unit_init_terrain] requires either a src= key or [terrain], but not both.")
+    elseif not (src_var or src) then
+        H.wml_error("[unit_init_terrain] requires either a src= key or [terrain].")
+    elseif src_var then
+        src = wml.variables[src_var]
+    end
+
+    for k,v in pairs(src) do
         local arr = tostring(v):split(",")
         local defense, movement = tonumber(arr[1]), tonumber(arr[2])
         table.insert(result, {k, {defense = defense, movement = movement}})
