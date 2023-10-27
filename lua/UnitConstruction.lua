@@ -825,7 +825,7 @@ local function constructUnit(var, unstore)
 		set_p(unit, weapon_class_path, 1 + get_n(unit, weapon_class_path))
 		if weapon_class_path == "thunderstick" then
 			local max_damage = get_n(weapon_list[i], "max_damage")
-			if max_damage > get_n(weapon_list[i], "damage") and get_n(weapon_list[i], "level") <= get_n(unit, "variables.abilities.thunderstick_tinker") then
+			if max_damage > get_n(weapon_list[i], "damage") and get_n(weapon_list[i], "ts_level") <= get_n(unit, "variables.abilities.thunderstick_tinker") then
 				set_p(unit, string.format("variables.inventory.weapons.ranged[%d].damage", i - 1), max_damage)
 			end
 		end

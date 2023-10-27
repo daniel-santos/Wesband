@@ -1583,6 +1583,8 @@ local function createArmor(atype, rank, attr, var)
 
 		at.prob_name = atype
 		at.description = adjustName(at.description, at.material)
+		at.rank = rank
+		at.level = rank
 		return adjustArmorDescription(at)
 	end
 
