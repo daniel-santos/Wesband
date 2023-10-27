@@ -318,23 +318,25 @@ function dump(args, mode, called_as)
 	local tag_close = "[/" .. called_as .. "]"
 	local var = args.var
 	local name = args.name
-	local value
+	local value = nil
 	local mode = tostring(mode or args.mode or "wml")
 	local result
 
 	std_print(dump_lua_value(wml.parsed(args), "args"))
-	if not value then
-		local k, v
-		for k, v in pairs(wml.parsed(args)) do
-			std_print("parsed " .. k)
-			if type(v) == "table" and type(v[1]) == "string" and v[1] == "value" and type(v[2]) == "table" then
-				value = v[2]
-			end
+
+	local k, v
+	for k, v in pairs(wml.parsed(args)) do
+-- 		std_print(string.format("pairs[%s] = %s, %s, %s, %s, %s, %s", k,
+-- 						type(v),     v[1] and type(    v[1]) or nil, v[2] and type(    v[2]) or nil,
+-- 						tostring(v), v[1] and tostring(v[1]) or nil, v[2] and tostring(v[2]) or nil))
+		if type(v) == "table" and type(v[1]) == "string" and v[1] == "value" and type(v[2]) == "table" then
+			value = v[2]
 		end
 	end
 
 	if not (var or value) then
-		H.wml_error(tag_open .. " requires either var= or value= attribute")
+		return
+		--H.wml_error(tag_open .. " requires either var= or value= attribute")
 	elseif var and value then
 		H.wml_error(tag_open .. " requires either var= or value= attribute, but not both.")
 	elseif var then
