@@ -2670,7 +2670,7 @@ function update_loot_menu(x, y)
 	end
 
 -- 	std_print("nearby_items: " .. nearby_items)
-	std_print(dump_lua_value(nearby_items, "nearby_items"))
+-- 	std_print(dump_lua_value(nearby_items, "nearby_items"))
 
 	if nearby_items then
 		wml.variables.menu = {}

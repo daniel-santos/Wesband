@@ -19,7 +19,7 @@ function prob_list_eval(cfg)
 		items   = tostring(list.items):split(","),
 		weights = tostring(list.weights):split(",")
 	}
-	std_print(dump_lua_value(pl, "pl"))
+-- 	std_print(dump_lua_value(pl, "pl"))
 
 	if #pl.items ~= #pl.weights then
 		H.wml_error("in prob_list " .. list.name .. ", count of items and weights do not match")
@@ -39,7 +39,7 @@ function prob_list_eval(cfg)
 
 	list.count = pl.count
 	list.total_weight = total_weight
-	std_print(dump_lua_value(list, "list"))
+-- 	std_print(dump_lua_value(list, "list"))
 	return list
 end
 
@@ -65,7 +65,7 @@ function wesnoth.wml_actions.prob_list(cfg)
 	-- If not using late expansion, then expand then now
 	wml.variables[name] = literal and list or prob_list_eval(wml.tovconfig(list))
 	if literal then
-		std_print(dump_lua_value(wml.variables[name], name))
+-- 		std_print(dump_lua_value(wml.variables[name], name))
 	end
 end
 

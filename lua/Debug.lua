@@ -311,58 +311,18 @@ function dump_lua_table(node, indent, indent_next, max_key_pad, allow_folding)
 	end
 	return out .. ((nchildren > 1 or not do_folding) and "\n" .. indent or "")  .. "}"
 end
-
+-- unit experience=17
 function dump(args, mode, called_as)
+	local fuck = wml.parsed(args)
 	called_as = called_as or "dump"
 	local tag_open  = "[" .. called_as .. "]"
 	local tag_close = "[/" .. called_as .. "]"
 	local var = args.var
 	local name = args.name
-	local value = args.value
+	local value
 	local mode = tostring(mode or args.mode or "wml")
 	local result
-
-	std_print(dump_lua_value(wml.parsed(args), "args"))
-	if not value then
-		local k, v
-		for k, v in pairs(wml.parsed(args)) do
-			std_print("parsed " .. k)
-			if type(v) == "table" and type(v[1]) == "string" and v[1] == "value" and type(v[2]) == "table" then
-				value = v[2]
-			end
-		end
-	end
-
-	if not (var or value) then
-		H.wml_error(tag_open .. " requires either var= or value= attribute")
-	elseif var and value then
-		H.wml_error(tag_open .. " requires either var= or value= attribute, but not both.")
-	elseif var then
-		var = tostring(var)
-		value = wml.variables[var]
-		name = name or var
-	else
-		name = name or "value"
-	end
-
-	if mode == "wml" then
-		result = dump_wml_value(value, name, "  ")
-	else
-		local lua
-		if mode == "lua" then
-			lua = value
-		elseif mode == "parsed_lua" then
-			lua = parse_container(value)
-		elseif mode == "wml2lua" then
-			lua = wml2lua_table(value)
-		else
-			H.wml_error("[dump] received invalid mode= atrribute: " .. mode)
-		end
-
-		result = dump_lua_value(lua, name, "  ")
-	end
-
-	std_print(tag_open .. "\n  " .. result .. "\n" .. tag_close)
+	local k, v
 end
 
 -- [dump]
@@ -394,5 +354,6 @@ end
 --     name  - label to use for dumped value. Defaults to var or "value" depending on which input is used
 -- [/dump_lua]
 function wesnoth.wml_actions.dump_lua(args)
-	return dump(args, "lua", "dump_lua")
+-- 	std_print(".." .. dump_lua_value(wml.parsed(args), "args"))
+    return dump(args, "lua", "dump_lua")
 end
