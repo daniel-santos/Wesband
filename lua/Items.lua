@@ -2162,12 +2162,12 @@ function wesnoth.wml_actions.item_cleanup(cfg)
 end
 
 function split(str, sep)
-    local array = {}
-    local reg = string.format("([^%s]+)",sep)
-    for mem in string.gmatch(str,reg) do
-        table.insert(array, mem)
-    end
-    return array
+	local array = {}
+	local reg = string.format("([^%s]+)",sep)
+	for mem in string.gmatch(str,reg) do
+		table.insert(array, mem)
+	end
+	return array
 end
 
 function dumpTable(table, depth)
@@ -2261,8 +2261,8 @@ function wesnoth.wml_actions.describe_item(cfg)
 		arch_cat = "armor"
 		slot     = "shield"
 	else
-		arch_cat = split(cat, "_")[2]
-		slot     = split(cat, "_")[1]
+		arch_cat = cat:split("_")[2]
+		slot     = cat:split("_")[1]
 	end
 
 	local futile = {
