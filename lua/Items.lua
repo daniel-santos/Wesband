@@ -1060,7 +1060,7 @@ local function cappend(st1, st2)
 end
 
 function adjustWeaponDescription(wt)
-    local ench = wt.enchantments and wt.ench3antments[1] or nil
+	local ench = wt.enchantments and wt.ench3antments[1] or nil
 	if wt.evade_adjust and wt.evade_adjust ~= 0 then
 		wt.evade_description = string.format(", Evade Adjust: %s%d", (wt.evade_adjust > 0 and "+" or ""), wt.evade_adjust)
 	end
@@ -1452,11 +1452,11 @@ local function createWeapon(wtype, level, attr, var)
 -- 	std_print(dump_lua_value(weapon, "weapon"))
 	weapon = adjustStats(weapon)
 -- 	weapon = finalAdjust(weapon)
-	if weapon.thrown then
-        weapon.thrown = adjustCoreStats(weapon.thrown)
-    end
-	wml.variables[var] = finalAdjust(weapon)
-end
+		if weapon.thrown then
+			weapon.thrown = adjustCoreStats(weapon.thrown)
+		end
+		wml.variables[var] = finalAdjust(weapon)
+	end
 
 function wesnoth.wml_actions.create_weapon(args)
 	local wtype = string.match(args.type, "[^%s]+") or H.wml_error("[create_weapon] requires a type= key")
@@ -2483,7 +2483,7 @@ function wesnoth.wml_actions.describe_item(cfg)
 			end
 
 			if show then
-                local stat
+				local stat
 				-- These stats are clasically either negative or zero, but this can change after
 				-- enchantment.
 				if have_stat then
@@ -2501,9 +2501,9 @@ function wesnoth.wml_actions.describe_item(cfg)
 				desc = desc .. (delimit and ", " or "") .. stat .. stats[i][1]
 				delimit = true
 			end
-            if i == 6 then
-                needcr = true
-            end
+			if i == 6 then
+				needcr = true
+			end
 		end
 		desc = desc .. "</small></small>"
 	else
@@ -2518,13 +2518,13 @@ function wesnoth.wml_actions.describe_item(cfg)
 
 	if mode == "replace" then
 		wesnoth.set_variable(dest, result)
-    elseif mode == "append" then
-        local value = wml.array_access.get(dest) or {}
-        table.insert(value, result)
-        wml.array_access.set(dest, value)
-    else
-        H.wml_error("[describe_item] invalid mode; must be either 'replace' or 'append'")
-    end
+	elseif mode == "append" then
+		local value = wml.array_access.get(dest) or {}
+		table.insert(value, result)
+		wml.array_access.set(dest, value)
+	else
+		H.wml_error("[describe_item] invalid mode; must be either 'replace' or 'append'")
+	end
 end
 
 
