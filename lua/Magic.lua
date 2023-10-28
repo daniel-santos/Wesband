@@ -21,7 +21,7 @@ function wesnoth.wml_actions.unit_action_info(cfg)
 	local casting_actions_max = casting_actions +
 								(simple_action > 0 and speed or 0) +
 								(attacks > 0 and speed or 0)
-	local text = string.format("Available actions: %d attack(s), %d simple"
+	local text = string.format("Available actions: %d attack(s), %d simple",
 							   attacks, simple_action)
 	if have_magic then
 		text = text .. string.format(", %d (%d) casting time",
