@@ -172,15 +172,14 @@ function wesnoth.wml_actions.adjust_armor_description(args)
 	wml.variables[var] = adjustArmorDescription(wml.variables[var])
 end
 
-local function createWeapon(wtype, rank, attr, var)
+local function createWeapon(wtype, level, attr, var)
 	if attr == "random" then
 		W.set_variable { name = "r_temp", rand = "rusty,unbalanced,none,none,none,none,none,none,heavy,sharp,light,balanced" }
 		attr = wml.variables['r_temp']
 		W.clear_variable { name = "r_temp" }
 	end
 
-	local rank_frac = rank * 0.1 + 1
-	rank = math.floor((rank * 5 + 6) / 12)
+	local rank = math.floor(level * 5 / 12)
 
 	local function adjustCoreStats(wt)
 		if wt.range == "melee" then
@@ -197,7 +196,6 @@ local function createWeapon(wtype, rank, attr, var)
 			wt.range = wt.range or "ranged"
 		end
 
-		wt.number = wt.number or 1
 		if wt.number == 0 then
 			wt.damage = wt.damage + 2 * rank
 		elseif wt.number == 1 then
@@ -291,6 +289,9 @@ local function createWeapon(wtype, rank, attr, var)
 		wt.runic_magic_adjust = 0
 		wt.spirit_magic_adjust = 0
 		wt.absolute_value = 0
+		wt.rank					= rank
+		wt.level				= level
+		wt.number				= wt.number or 1
 
 		return adjustCoreStats(wt)
 	end
@@ -379,6 +380,7 @@ local function createWeapon(wtype, rank, attr, var)
 	end
 
 	local function addMagicAdjust(school, amount, wt)
+		local rank_frac = 1 + level * 0.1
 		local aa
 		if attr == "rusty" then
 			aa = math.floor(rank_frac * amount * 0.7 + 0.5)
