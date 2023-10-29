@@ -1060,17 +1060,13 @@ local function cappend(st1, st2)
 end
 
 function adjustWeaponDescription(wt)
-	local ench = wt.enchantments and wt.ench3antments[1] or nil
+	local ench = wt.enchantments and wt.enchantments[1] or nil
 	if wt.evade_adjust and wt.evade_adjust ~= 0 then
 		wt.evade_description = string.format(", Evade Adjust: %s%d", (wt.evade_adjust > 0 and "+" or ""), wt.evade_adjust)
 	end
 	local st1, st2, st3 = "", "", ""
 	if wt.class == "thunderstick" then
 		st1 = "requires thunderstick tinker for upkeep and upgrade"
-	end
-
-	if wt.enchantments and wt.enchantments[1] then
-
 	end
 
 	local sp = wml.get_child(wt, "special_type")
