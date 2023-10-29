@@ -2522,3 +2522,139 @@ function wesnoth.wml_actions.describe_item(cfg)
 		H.wml_error("[describe_item] invalid mode; must be either 'replace' or 'append'")
 	end
 end
+
+function wesnoth.wml_conditionals.is_near_loot(cfg)
+	local x = cfg.x or H.wml_error("[is_near_loot] expects an x= attribute")
+	local y = cfg.y or H.wml_error("[is_near_loot] expects a y= attribute")
+	local r = cfg.radius and tonumber(cfg.radius) or 1
+	local locs = wesnoth.map.get_hexes_in_radius(x, y, r) or {}
+	table.insert(locs, {x, y})
+
+	for i,loc in ipairs(locs) do
+		local var = string.format("ground.x%d.y%d.items.length", loc[1], loc[2])
+		local items = wml.variables[var]
+		if items and items > 0 then
+			return true
+		end
+-- 		std_print("var = " .. var .. ", #items = " .. (items and tostring(#items) or "nil") .. (items and dump_lua_value(items, "items") or "items = nil"))
+	end
+	return false
+end
+
+local loot_msgs = {
+	_"",
+	_"",
+	_"Pick up %d gold",
+	_"Pick up %d gold nearby",
+	_"Pick up %d items",
+	_"Pick up %d items nearby",
+	_"Pick up %d gold and %d items",
+	_"Pick up %d gold and %d items nearby",
+	_"Pick up %s",
+	_"Pick up %s nearby",
+	_"Pick up %d gold and %s",
+	_"Pick up %d gold and %s nearby"
+}
+
+function update_loot_menu(x, y)
+-- 	local unit =  wesnoth.units.get(x, y)
+	local i, j, loc
+	local gold, nitems = 0, 0
+	local nearby_items
+	local is_safe = checkSafety(x, y)
+	local loot_radius = is_safe and 1 or 0
+	local nearby = false
+	local last_item
+
+
+	if x < 1 or y < 1 or x > 500 or y > 500 then return end
+-- 	std_print(dump_lua_value(unit, "unit"))
+-- 	if not unit or not unit.canrecruit then return end
+	local locs = {}
+	if is_safe then
+		locs = wesnoth.map.get_hexes_in_radius(x, y, loot_radius)
+	end
+
+	table.insert(locs, {x, y})
+-- 	std_print(dump_lua_value(locs, "locs"))
+
+	for i,loc in ipairs(locs) do
+		local items_var = string.format("ground.x%d.y%d.items", loc[1], loc[2])
+		local count = wml.variables[items_var .. ".length"]
+		local items = wml.array_access.get(items_var)
+		local underfoot = x == loc[1] and y == loc[2]
+		if count and count > 0 then
+-- 			std_print(dump_lua_value({items_var = items_var, count = count, items = items}, "item_info"))
+			for k, v in pairs(items) do
+				local item = v
+-- 				std_print(dump_lua_value({k = k, v = v, cat = v.category}))
+-- 				local var = items .. "[" .. tostring(j) .. "]"
+-- 				local item = wml.parsed(wml.variables[var])
+-- 				local item = items[j]
+-- 				std_print(dump_lua_value(item, items_var .. "[" .. tostring(j) .. "]"))
+				if item and item.category then
+					if not underfoot then
+						nearby = true
+					end
+					if item.category == "gold" then
+						gold = gold + item.amount
+-- 						std_print(dump_lua_value(gold, "gold"))
+					else
+						nitems = nitems + 1
+						last_item = item
+-- 						std_print(dump_lua_value(nitems, "nitems"))
+					end
+				end
+			end
+		end
+-- 		std_print("var = " .. var .. ", #items = " .. (items and tostring(#items) or "nil") .. (items and dump_lua_value(items, "items") or "items = nil"))
+	end
+
+	if gold + nitems == 0 then
+		return
+	end
+
+	local msgs_index = 1 +
+					   (nearby and 1 or 0) +
+					   (gold > 0 and 2 or 0) +
+					   (nitems == 0 and 0 or nitems > 1 and 4 or 8)
+	local fmt = loot_msgs[msgs_index]
+
+	if msgs_index < 5 then
+		nearby_items = string.format(fmt, gold)
+	elseif msgs_index < 7 then
+		nearby_items = string.format(fmt, nitems)
+	elseif msgs_index < 9 then
+		nearby_items = string.format(fmt, gold, nitems)
+	elseif msgs_index < 11 then
+		nearby_items = string.format(fmt, last_item.description)
+	else
+		nearby_items = string.format(fmt, gold, last_item.description)
+	end
+
+-- 	std_print("nearby_items: " .. nearby_items)
+-- 	std_print(dump_lua_value(nearby_items, "nearby_items"))
+
+	if nearby_items then
+		wml.variables.menu = {}
+		wml.variables.loot_radius = loot_radius
+		wml.variables.nearby_items = nearby_items
+		wesnoth.fire_event("setup_loot_menu", {x, y})
+		-- Wesnoth 1.17?
+-- 		wesnoth.game_events.fire("setup_loot_menu", {x, y})
+	end
+end
+
+if wesnoth.current_version() < wesnoth.version(1, 17, 22) then
+    wesnoth.game_events.on_mouse_move = function(x, y)
+        update_loot_menu(x, y)
+    end
+else
+    wesnoth.game_events.on_mouse_button = function(x, y, button, event)
+        -- std_print(string.format("on_mouse_button %d,%d %s %s", x, y, button, event))
+        if button == "right" and event == "click" then
+            update_loot_menu(x, y)
+        end
+        return false
+    end
+end

@@ -1,4 +1,4 @@
-local function checkSafety(x, y)
+function checkSafety(x, y)
 	local rouse_list = wml.variables["rouse_list"]
 	local safety
 	if rouse_list then
@@ -221,4 +221,11 @@ function wesnoth.wml_actions.check_safety(cfg)
 	if not safety then
 		wml.variables[v] = 0
 	end
+end
+
+function wesnoth.wml_conditionals.is_safe(cfg)
+	local x = cfg.x or H.wml_error("[is_safe] expects an x= attribute")
+	local y = cfg.y or H.wml_error("[is_safe] expects a y= attribute")
+
+	return checkSafety(x, y)
 end
