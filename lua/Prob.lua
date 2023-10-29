@@ -1,9 +1,4 @@
 -- these are global functions for ease of use in lua scripts as well as WML
--- function wesnoth.wml_actions.hello(cfg)
---     local msg = cfg.msg or "world"
---     local literal = cfg.literal or "literal world"
---     gui.show_popup("hello", literal .. " " .. msg)
--- end
 
 function prob_list_eval(cfg)
 	local i
