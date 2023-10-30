@@ -37,18 +37,23 @@ function eval_item(item)
 		slot		= nil,
 		terrain		= wml.get_child(item, "terrain"),
 		resistance	= wml.get_child(item, "resistance") or {},
+		magic_bonus = 0,
 		adjust		= {
 			magic	= num_or(item.magic_adjust),
 			ranged	= num_or(item.ranged_adjust),
 			evade	= num_or(item.evade_adjust),
-			defense	= 0,
+			defense	= 0
 		}
 	}
 	std_print(dump_lua_value({resist = ret.resistance, item = item}, "wtf_" .. item.name))
 	local i, j
 	for i, j in pairs(magic_types) do
 		local property_name = j .. "_magic_adjust"
-		ret.adjust.magic = ret.adjust.magic + num_or(item[property_name])
+		local value = num_or(item[property_name])
+		ret.magic_bonus = ret.magic_bonus + value
+		if value > 0 then
+			ret.magic_type = j
+		end
 	end
 
 	if ret.cat == "(category missing)" then
@@ -109,20 +114,10 @@ local function eval_equipment(unit)
 		{"leg_armor",	armor,		"legs"},
 		{"shield",		armor,		"shield"}
 	}
--- 	local result = {
--- 		{"total", {
--- 			magic_adjust	= 0,
--- 			ranged_adjust	= 0,
--- 			evade_adjust	= 0,
--- 			defense_adjust	= 0
--- 		}}
--- 	}
+
 	local adjust = {}
 	local i, k, v
 
--- 	if not (equipment_slots and weapons and armor) then
--- 		return nil
--- 	end
 	for i = 1, #slots do
 		local slot = slots[i]
 		local idx = num_or(equipment_slots[slot[1]])
@@ -135,13 +130,18 @@ local function eval_equipment(unit)
 -- 				std_print("why not" .. slot[3] .. "?\n" .. dump_wml_value(slot[2]))
 			else
 				local info = eval_item(item)
+				if slot[1] == "melee_1" then
+					adjust.melee1_name = item.name
+					adjust.melee1_user_name = item.name
+					adjust.magic_type = info.magic_type
+				end
 				for k, v in pairs(info.adjust) do
 					adjust[k] = num_or(adjust[k]) + v
 				end
 			end
 		end
 	end
-	std_print(dump_lua_value(adjust, "eval_equipment"))
+-- 	std_print(dump_lua_value(adjust, "eval_equipment"))
 	return adjust
 end
 
@@ -521,183 +521,198 @@ end
 
 
 
+function child(obj, ...)
+	local k, v
+	local ret = obj
+	for k, v in ipairs(table.pack(...)) do
+		if not ret then return nil end
+		ret = ret[v] or wml.get_child(ret, v) or nil
+	end
+	return ret
+end
+function nchild(obj, ...)
+	local ret = child(obj, ...)
+	return ret and tonumber(ret) or 0
+end
 
+function get_attack_basics_light(unit, weapon)
+	-- use both a wml or a unit
+-- 	local unit_variables = unit and unit.variables or wml.get_child(unit, "variables")
+	local unit_variables = child(unit, "variables")
+	if not unit_variables then return {} end
+	local res = {
+		damage		= 1,
+		number		= 0,
+		description	= weapon.description,
+		name		= weapon.name,
+		user_name	= weapon.user_name,
+		type		= weapon.type,
+		icon		= string.format("attacks/%s.png", weapon.icon),
+		range		= weapon.range,
+		material	= weapon.material,
+		prereq		= wml.get_child(weapon, "prereq")
+	}
+	local percent_mult = 1.0
+	local var_abilities = child(unit_variables, "abilities")
+	local magic_casting = child(var_abilities, "magic_casting")
+	local adjust = child(unit_variables, "adjust")
+	local weapon_special_type = child(weapon, "special_type")
+	if weapon.class == "magical" or weapon.class == "spell" then
+		res.damage = nchild(magic_casting, "power") * num_or(weapon.spell_power, 1)
+		res.number = nchild(magic_casting, "speed")
 
-
-
--- function get_attack_basics_light(unit, weapon)
--- 	local res = {
--- 		damage		= 1,
--- 		number		= 0,
--- 		description	= weapon.description,
--- 		name		= weapon.name,
--- 		user_name	= weapon.user_name,
--- 		type		= weapon.type,
--- 		icon		= string.format("attacks/%s.png", weapon.icon),
--- 		range		= weapon.range,
--- 		material	= weapon.material,
--- 		prereq		= wml.get_child(weapon, "prereq")
--- 	}
--- 	local var_abilities = wml.get_child(unit.variables, "abilities")
--- 	local percent_mult = 1.0
--- 	local magic_casting = var_abilities  and wml.get_child(var_abilities, "magic_casting") or nil
--- 	if weapon.class == "magical" or weapon.class == "spell" then
--- 		res.damage = num_or(magic_casting and magic_casting.power) * num_or(weapon.spell_power, 1)
--- 		res.number = num_or(magic_casting and magic_casting.speed)
---
 -- 		local spell_bonus_type = weapon.bonus_type
--- 		local armor_penalty = get_n(equipment.shield, "magic_adjust") + get_n(equipment.head_armor, "magic_adjust") + get_n(equipment.torso_armor, "magic_adjust") + get_n(equipment.leg_armor, "magic_adjust")
--- 		if spell_bonus_type == "runic_magic_adjust" then
--- 			armor_penalty = armor_penalty * 0.5
--- 			if get_p(equipment.melee_1, "user_name") == "hammer" then
--- 				armor_penalty = math.min(0, armor_penalty + 3 * get_n(unit, "variables.abilities.magic_casting.focus"))
--- 			end
--- 		elseif weapon.name == "faerie fire" then
--- 			if get_p(equipment.melee_1, "name") == "sword" then
--- 				armor_penalty = math.min(0, armor_penalty + 3 * get_n(unit, "variables.abilities.magic_casting.focus"))
--- 			end
--- 		end
--- 		percent_mult = percent_mult * math.max(0, 100 + get_n(equipment.melee_1, spell_bonus_type) + armor_penalty) * 0.01
--- 	else
--- 		local weapon_skills = unit.variables and wml.get_child(unit.variables, "weapon_skills") or nil
--- 		local skill = weapon_skills and wml.get_child(weapon_skills, weapon.class)) or nil
--- 		if weapon.number < 2 then
--- 			res.damage = 2
--- 		end
--- 		res.damage = res.damage * num_or(skill.damage, 1)
--- 		res.number = num_or(skill.attack)
---
--- 		if res.range == "ranged" then
--- 			percent_mult = percent_mult * math.max(0, 100 + get_n(equipment.head_armor, "ranged_adjust") + get_n(equipment.shield, "ranged_adjust")) * 0.01
--- 		end
--- 	end
--- 	local function add_stat_adjusts(stat)
--- 		local stat_level = num_or(unit.variables.stat)
--- 		res.damage = res.damage + num_or(weapon[stat .. "_damage_rate"]) * stat_level * 0.01
--- 		res.number = res.number + num_or(weapon[stat .. "_number_rate"]) * stat_level * 0.01
--- 		local prereq = res.prereq and res.prereq[stat] or 0
--- 		if prereq > stat_level then
--- 			percent_mult = percent_mult * stat_level / prereq
--- 		end
--- 	end
--- 	add_stat_adjusts("body")
--- 	add_stat_adjusts("deft")
--- 	add_stat_adjusts("mind")
---
--- 	if unit.race == "elf" then
--- --                [weapon_skills]
--- --                    [race_adjust]
--- --                        [class]
--- --                            [bow]
--- --                                number_hard=1
--- --                            [/bow]
--- --                        [/class]
--- --                    [/race_adjust]
--- --                [/weapon_skills]
--- 		if weapon.class == "bow" then
--- 			res.number = res.number + 1
--- 		end
--- 	elseif unit.race == "dwarf" then
--- --                [weapon_skills]
--- --                    [race_adjust]
--- --                        [user_name]
--- --                            [axe]
--- --                                number_hard=1
--- --                                damage_percent=-20
--- --                            [/axe]
--- --                            [hammer]
--- --                                damage_percent=20
--- --                            [/hammer]
--- --                        [/user_name]
--- --                    [/race_adjust]
--- --                [/weapon_skills]
--- 		if weapon.user_name == "axe" then
--- 			res.number = res.number + 1
--- 			percent_mult = percent_mult * 0.8
--- 		elseif weapon.user_name == "hammer" then
--- 			percent_mult = percent_mult * 1.2
--- 		end
--- 	elseif unit.race == "troll" then
--- --                [weapon_skills]
--- --                    [race_adjust]
--- --                        [class]
--- --                            [light_blade]
--- --                                damage_percent=-25
--- --                            [/light_blade]
--- --                            [heavy_blade]
--- --                                damage_percent=-25
--- --                            [/heavy_blade]
--- --                            [polearm]
--- --                                damage_percent=-25
--- --                            [/polearm]
--- --                            [thrown_light_blade]
--- --                                damage_percent=-25
--- --                            [/thrown_light_blade]
--- --                            [thrown_heavy_blade]
--- --                                damage_percent=-25
--- --                            [/thrown_heavy_blade]
--- --                            [bow]
--- --                                damage_percent=-25
--- --                            [/bow]
--- --                            [javelin]
--- --                                damage_percent=-25
--- --                            [/javelin]
--- --                            [crossbow]
--- --                                damage_percent=-25
--- --                            [/crossbow]
--- --                            [none]
--- --                                damage_percent=-25
--- --                            [/none]
--- --                        [/class]
--- --                    [/race_adjust]
--- --                [/weapon_skills]
--- 		if weapon.class ~= "bludgeon" and weapon.class ~= "lob" then
--- 			percent_mult = percent_mult * 0.75
--- 		end
--- 	elseif unit.race == "lizard" then
--- --                [weapon_skills]
--- --                    [race_adjust]
--- --                        [class]
--- --                            [polearm]
--- --                                number_hard=1
--- --                                damage_percent=-20
--- --                            [/polearm]
--- --                            [javelin]
--- --                                number_hard=1
--- --                                damage_percent=-20
--- --                            [/javelin]
--- --                        [/class]
--- --                    [/race_adjust]
--- --                [/weapon_skills]
--- 		if weapon.class == "polearm" or weapon.class == "javelin" then
--- 			res.number = res.number + 1
--- 			percent_mult = percent_mult * 0.8
--- 		end
--- 	end
--- 	res.damage = math.max(1, math.floor(percent_mult * (get_n(weapon, "damage") + res.damage)))
--- 	res.number = math.floor(get_n(weapon, "number") + res.number)
--- 	local target_level = get_n(unit, "variables.abilities.target")
--- 	if target_level > 0 and get_n(weapon, "special_type.backstab") > 0 then
--- 		res.damage = math.ceil(res.damage * 0.5 * (3 + target_level))
--- 		res.number = math.ceil(res.number * 0.5)
--- 	end
--- 	if get_n(unit, "variables.abilities.witch_magic") == 4 then
--- 		res.damage = math.floor(res.damage * 1.5 + 0.5)
--- 	end
--- 	if weapon.class == "light_blade" and get_n(unit, "variables.abilities.witchcraft") == 1 and get_n(unit, "variables.abilities.magic_casting.power") > 0 then
--- 		res.number = math.ceil(res.number * 0.5)
--- 	end
--- 	if res.user_name == "hammer" and get_n(unit, "variables.abilities.devling_spiker") > 0 then
--- 		res.description = "nail 'em"
--- 		res.damage = math.floor(res.damage * res.number + 0.5)
--- 		res.number = 1
--- 	end
--- 	if res.user_name == "spike 'em" then
--- 		res.damage = math.floor(res.damage * res.number * 1.25 + 0.5)
--- 		res.number = 1
--- 	end
--- 	return res, weapon.class
--- end
+		local armor_penalty = num_or(adjust.magic)
+		if weapon.runic_magic_adjust and armor_penalty < 0 then
+			armor_penalty = armor_penalty * 0.5
+		end
+		if (weapon.runic_magic_adjust and adjust.melee1_user_name == "hammer") or
+		   (weapon.name == "faerie fire" and adjust.melee1_name == "sword") then
+			armor_penalty = math.min(0, armor_penalty + 3 * magic_casting.focus)
+		end
+		percent_mult = math.max(0, 100 + adjust.magic_bonus + armor_penalty) / 100
+	else
+		local weapon_skills = child(unit_variables, "weapon_skills")
+		local skill = child(weapon_skills, weapon.class)
+		if weapon.number < 2 then
+			res.damage = 2
+		end
+		res.damage = res.damage * num_or(skill and skill.damage or nil, 1)
+		res.number = num_or(skill and skill.attack or nil, 0)
+
+		if res.range == "ranged" then
+			percent_mult = math.max(0, 100 + adjust.ranged) / 100
+		end
+	end
+	local function add_stat_adjusts(stat)
+		local stat_level = nchild(unit_variables, stat)
+		res.damage = res.damage + num_or(weapon[stat .. "_damage_rate"]) * stat_level / 100
+		res.number = res.number + num_or(weapon[stat .. "_number_rate"]) * stat_level / 100
+		local prereq = res.prereq and res.prereq[stat] or 0
+		if prereq > stat_level then
+			percent_mult = percent_mult * stat_level / prereq
+		end
+	end
+	add_stat_adjusts("body")
+	add_stat_adjusts("deft")
+	add_stat_adjusts("mind")
+
+	if unit.race == "elf" then
+--                [weapon_skills]
+--                    [race_adjust]
+--                        [class]
+--                            [bow]
+--                                number_hard=1
+--                            [/bow]
+--                        [/class]
+--                    [/race_adjust]
+--                [/weapon_skills]
+		if weapon.class == "bow" then
+			res.number = res.number + 1
+		end
+	elseif unit.race == "dwarf" then
+--                [weapon_skills]
+--                    [race_adjust]
+--                        [user_name]
+--                            [axe]
+--                                number_hard=1
+--                                damage_percent=-20
+--                            [/axe]
+--                            [hammer]
+--                                damage_percent=20
+--                            [/hammer]
+--                        [/user_name]
+--                    [/race_adjust]
+--                [/weapon_skills]
+		if weapon.user_name == "axe" then
+			res.number = res.number + 1
+			percent_mult = percent_mult * 0.8
+		elseif weapon.user_name == "hammer" then
+			percent_mult = percent_mult * 1.2
+		end
+	elseif unit.race == "troll" then
+--                [weapon_skills]
+--                    [race_adjust]
+--                        [class]
+--                            [light_blade]
+--                                damage_percent=-25
+--                            [/light_blade]
+--                            [heavy_blade]
+--                                damage_percent=-25
+--                            [/heavy_blade]
+--                            [polearm]
+--                                damage_percent=-25
+--                            [/polearm]
+--                            [thrown_light_blade]
+--                                damage_percent=-25
+--                            [/thrown_light_blade]
+--                            [thrown_heavy_blade]
+--                                damage_percent=-25
+--                            [/thrown_heavy_blade]
+--                            [bow]
+--                                damage_percent=-25
+--                            [/bow]
+--                            [javelin]
+--                                damage_percent=-25
+--                            [/javelin]
+--                            [crossbow]
+--                                damage_percent=-25
+--                            [/crossbow]
+--                            [none]
+--                                damage_percent=-25
+--                            [/none]
+--                        [/class]
+--                    [/race_adjust]
+--                [/weapon_skills]
+		if weapon.class ~= "bludgeon" and weapon.class ~= "lob" then
+			percent_mult = percent_mult * 0.75
+		end
+	elseif unit.race == "lizard" then
+--                [weapon_skills]
+--                    [race_adjust]
+--                        [class]
+--                            [polearm]
+--                                number_hard=1
+--                                damage_percent=-20
+--                            [/polearm]
+--                            [javelin]
+--                                number_hard=1
+--                                damage_percent=-20
+--                            [/javelin]
+--                        [/class]
+--                    [/race_adjust]
+--                [/weapon_skills]
+		if weapon.class == "polearm" or weapon.class == "javelin" then
+			res.number = res.number + 1
+			percent_mult = percent_mult * 0.8
+		end
+	end
+	res.damage = math.max(1, math.floor(percent_mult * (weapon.damage + res.damage)))
+	res.number = math.floor(weapon.number + res.number)
+	local target_level = var_abilities and num_or(var_abilities.target) or 0
+	if target_level > 0 and nchild(weapon_special_type, "backstab") > 0 then
+		res.damage = math.ceil(res.damage * 0.5 * (3 + target_level))
+		res.number = math.ceil(res.number * 0.5)
+	end
+	if var_abilities and num_or(var_abilities.witch_magic) >= 4 then
+		res.damage = math.floor(res.damage * 1.5 + 0.5)
+	end
+	if weapon.class == "light_blade" and
+			nchild(var_abilities, "witchcraft") == 1 and
+			nchild(magic_casting, "power") > 0 then
+		res.number = math.ceil(res.number * 0.5)
+	end
+	if res.user_name == "hammer" and var_abilities and nchild(var_abilities, "devling_spiker") > 0 then
+		res.description = "nail 'em"
+		res.damage = math.round(res.damage * res.number)
+		res.number = 1
+	end
+	if res.user_name == "spike 'em" then
+		res.damage = math.round(res.damage * res.number * 1.25)
+		res.number = 1
+	end
+	return res, weapon.class
+end
 
 
 
@@ -3221,21 +3236,11 @@ local function constructUnit(var, unstore)
 	set_p(unit, "status.construct_unit", "yes")
 	local unparsed_unit = unparse_container(unit)
 
---	unit.variables.stats =
--- 	std_print(dump_lua_value(var, "var"))
--- 	std_print(dump_lua_value(unit_id, "unit_id"))
--- 	local unit_ref = wesnoth.units.get(unit_id) or wml.variables[var]
--- 	if unit_id == "Character1" then
--- 		std_print(dump_lua_value(unparsed_unit.variables, "unit_variables"))
--- 		std_print(dump_lua_value(wml.get_child(unparsed_unit, "variables"), "wml_variables"))
--- 	end
-
-	local unit_id = wml.variables[var .. ".id"]
+	-- Calculate and cache *_adjust stats
 	local adjust = eval_equipment(unparsed_unit)
 	local unit_variables = wml.get_child(unparsed_unit, "variables")
-
-	std_print(dump_lua_value(unparsed_unit.name, "unit_ref.name"))
-	std_print(dump_lua_value(adjust, "adjust"))
+-- 	std_print(dump_lua_value(unparsed_unit.name, "unit_ref.name"))
+-- 	std_print(dump_lua_value(adjust, "adjust"))
 	wml.remove_child(unit_variables, "adjust")
 	table.insert(unit_variables, {"adjust", adjust})
 

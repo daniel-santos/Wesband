@@ -2311,18 +2311,18 @@ function wesnoth.wml_actions.describe_item(cfg)
 		icon = "attacks/" .. item.icon
 		local adjusted = ""
 
-		if unit_var then
-			local unit = parse_container(wml.variables[unit_var]) or
-						 H.wml_error("[describe_item] can't find unit " .. unit_var)
-			local attack = get_attack_basics(unit, get_unit_equipment(unit), parse_container(wml_item))
-			adjusted = string.format(", Adjusted: (%d-%d)", attack.damage, attack.number)
-		end
 -- 		if unit_var then
--- 			local unit = wml.variables[unit_var] or
+-- 			local unit = parse_container(wml.variables[unit_var]) or
 -- 						 H.wml_error("[describe_item] can't find unit " .. unit_var)
--- 			local attack = get_attack_basics_light(unit, wml_item)
+-- 			local attack = get_attack_basics(unit, get_unit_equipment(unit), parse_container(wml_item))
 -- 			adjusted = string.format(", Adjusted: (%d-%d)", attack.damage, attack.number)
 -- 		end
+		if unit_var then
+			local unit = wesnoth.units.get(wml.variables[unit_var .. ".id"]) or wml.variables[unit_var] or
+						 H.wml_error("[describe_item] can't find unit " .. unit_var)
+			local attack = get_attack_basics_light(unit, wml_item)
+			adjusted = string.format(", Adjusted: (%d-%d)", attack.damage, attack.number)
+		end
 
 		local specials = ""
 		if ench_stats then
