@@ -173,9 +173,9 @@ function wesnoth.wml_actions.wbd_sort_array ( cfg )
         wml.array_access.set(cfg.name, tArray)
 end
 
--- parse_container - convert a WML Lua container into a more Lua structure.
--- The result will contain a pair of Lua tables for each level of the WML
--- container:
+-- parse_container - convert a WML Lua container into a more Lua-friendly
+-- structure. The result will contain a pair of Lua tables for each level
+-- of the WML container:
 -- parsed.k = key/scalar-value pairs from the WML container
 -- parsed.c = key/container pairs from the WML container
 function parse_container(wml)

@@ -207,10 +207,10 @@ function dump_wml_table(node, name, indent, indent_next, max_key_pad)
 			end
 
 			if (type(v) == "table") then
---                  std_print("table's first child is " .. type(v[1]) .. tostring(v[1]))
+-- 					std_print("table's first child is " .. type(v[1]) .. tostring(v[1]))
 					key_str = tostring(v[1])
 				if v[1] ~= nil and type(v[1]) == "string" then
---                     key_str = "[" .. v[1] .. "]"
+-- 					key_str = "[" .. v[1] .. "]"
 					if #v == 2 and type(v[2]) == "table" then
 						v = v[2]
 					end
@@ -322,7 +322,7 @@ function dump(args, mode, called_as)
 	local mode = tostring(mode or args.mode or "wml")
 	local result
 
-	std_print(dump_lua_value(wml.parsed(args), "args"))
+-- 	std_print(dump_lua_value(wml.parsed(args), "args"))
 
 	local k, v
 	for k, v in pairs(wml.parsed(args)) do
@@ -335,8 +335,7 @@ function dump(args, mode, called_as)
 	end
 
 	if not (var or value) then
-		return
-		--H.wml_error(tag_open .. " requires either var= or value= attribute")
+		H.wml_error(tag_open .. " requires either var= or value= attribute")
 	elseif var and value then
 		H.wml_error(tag_open .. " requires either var= or value= attribute, but not both.")
 	elseif var then
@@ -375,8 +374,8 @@ end
 -- [/dump]
 -- "wtf is iparsed_luai and iwml2luai you ask?" Some lua code uses parse_container()
 -- to simplify accessing complex wml values and other code uses a slight variant, wml2lua_table()
-function wesnoth.wml_actions.dump(args)
-	return dump(args)
+function wesnoth.wml_actions.dump(cfg)
+	return dump(cfg)
 end
 
 -- alias for [dump] mode=wml [/dump]
@@ -385,8 +384,8 @@ end
 --     value - a value to dump  (cannot use with var)
 --     name  - label to use for dumped value. Defaults to var or "value" depending on which input is used
 -- [/dump_wml]
-function wesnoth.wml_actions.dump_wml(args)
-	return dump(args, "wml", "dump_wml")
+function wesnoth.wml_actions.dump_wml(cfg)
+	return dump(cfg, "wml", "dump_wml")
 end
 
 -- alias for [dump] mode=lua [/dump]
@@ -395,6 +394,6 @@ end
 --     value - a value to dump  (cannot use with var)
 --     name  - label to use for dumped value. Defaults to var or "value" depending on which input is used
 -- [/dump_lua]
-function wesnoth.wml_actions.dump_lua(args)
-	return dump(args, "lua", "dump_lua")
+function wesnoth.wml_actions.dump_lua(cfg)
+	return dump(cfg, "lua", "dump_lua")
 end

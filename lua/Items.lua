@@ -1060,7 +1060,7 @@ local function cappend(st1, st2)
 end
 
 function adjustWeaponDescription(wt)
-	local ench = wt.enchantments and wt.enchantments[1] or nil
+-- 	local ench = wt.enchantments and wt.enchantments[1] or nil
 	if wt.evade_adjust and wt.evade_adjust ~= 0 then
 		wt.evade_description = string.format(", Evade Adjust: %s%d", (wt.evade_adjust > 0 and "+" or ""), wt.evade_adjust)
 	end
@@ -1214,8 +1214,7 @@ local function createWeapon(wtype, level, attr, var)
 		W.clear_variable { name = "r_temp" }
 	end
 
-	local rank_frac = level * 0.1 + 1
-	local rank = math.floor(level * 5 / 12 + 0.50001)
+	local rank = math.floor(level * 5 / 12)
 
 	local function adjustCoreStats(wt)
 		if wt.range == "melee" then
@@ -1415,6 +1414,7 @@ local function createWeapon(wtype, level, attr, var)
 	end
 
 	local function addMagicAdjust(school, amount, wt)
+		local rank_frac = 1 + level * 0.1
 		local aa
 		if attr == "rusty" then
 			aa = math.floor(rank_frac * amount * 0.7 + 0.5)
@@ -1448,11 +1448,11 @@ local function createWeapon(wtype, level, attr, var)
 -- 	std_print(dump_lua_value(weapon, "weapon"))
 	weapon = adjustStats(weapon)
 -- 	weapon = finalAdjust(weapon)
-		if weapon.thrown then
-			weapon.thrown = adjustCoreStats(weapon.thrown)
-		end
-		wml.variables[var] = finalAdjust(weapon)
+	if weapon.thrown then
+		weapon.thrown = adjustCoreStats(weapon.thrown)
 	end
+	wml.variables[var] = finalAdjust(weapon)
+end
 
 function wesnoth.wml_actions.create_weapon(args)
 	local wtype = string.match(args.type, "[^%s]+") or H.wml_error("[create_weapon] requires a type= key")
@@ -2203,6 +2203,19 @@ local function array_contains(arr, val)
 	return false
 end
 
+
+
+
+
+
+
+
+
+
+
+
+
+
 -- [describe_item]
 --     item - name of the variable containing the item
 --     dest - name a variable to store the result in
@@ -2210,7 +2223,7 @@ end
 --     mode - either "replace" or "append", as with [set_variables], but does
 --            not support insert or merge. Default value is "replace".
 -- [/describe_item]
--- TODO:
+-- TODO: add a todo item...
 function wesnoth.wml_actions.describe_item(cfg)
 	local item_var = cfg.item or H.wml_error("[describe_item] requires an item= key")
 	local dest  = cfg.dest or H.wml_error("[describe_item] requires a dest= key")
@@ -2304,6 +2317,12 @@ function wesnoth.wml_actions.describe_item(cfg)
 			local attack = get_attack_basics(unit, get_unit_equipment(unit), parse_container(wml_item))
 			adjusted = string.format(", Adjusted: (%d-%d)", attack.damage, attack.number)
 		end
+-- 		if unit_var then
+-- 			local unit = wml.variables[unit_var] or
+-- 						 H.wml_error("[describe_item] can't find unit " .. unit_var)
+-- 			local attack = get_attack_basics_light(unit, wml_item)
+-- 			adjusted = string.format(", Adjusted: (%d-%d)", attack.damage, attack.number)
+-- 		end
 
 		local specials = ""
 		if ench_stats then
@@ -2326,12 +2345,18 @@ function wesnoth.wml_actions.describe_item(cfg)
 			end
 		end
 
+		local level_rank = ""
+		if item.rank then
+			-- we don't save these for undroppable
+			level_rank = string.format("(%s/%s)", item.rank, item.level)
+		end
+
 		desc = string.format(
-			"%s <small><small>(%s/%s)\n" ..
+			"%s <small><small>%s\n" ..
 			"Class: %s%s</small>\n" ..
 			"Base: (%s-%s)%s %s\n" ..
 			"<small>%s%s%s</small></small>",
-			desc, tostring(item.rank), tostring(item.level),
+			desc, level_rank,
 			item.class_description, (item.evade_description or ""),
 			item_ench_stat("damage"), item_ench_stat("number"),
 			adjusted, ench_stat(ench and ench.branded, item.type),
