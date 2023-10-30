@@ -37,18 +37,18 @@ function eval_item(item)
 		slot		= nil,
 		terrain		= wml.get_child(item, "terrain"),
 		resistance	= wml.get_child(item, "resistance") or {},
-		stats		= {
-			magic_adjust	= num_or(item.magic_adjust),
-			ranged_adjust	= num_or(item.ranged_adjust),
-			evade_adjust	= num_or(item.evade_adjust),
-			defense_adjust	= 0,
+		adjust		= {
+			magic	= num_or(item.magic_adjust),
+			ranged	= num_or(item.ranged_adjust),
+			evade	= num_or(item.evade_adjust),
+			defense	= 0,
 		}
 	}
 	std_print(dump_lua_value({resist = ret.resistance, item = item}, "wtf_" .. item.name))
 	local i, j
 	for i, j in pairs(magic_types) do
 		local property_name = j .. "_magic_adjust"
-		ret.stats.magic_adjust = ret.stats.magic_adjust + num_or(item[property_name])
+		ret.adjust.magic = ret.adjust.magic + num_or(item[property_name])
 	end
 
 	if ret.cat == "(category missing)" then
@@ -81,7 +81,7 @@ function eval_item(item)
 	end
 
 	local flat_terrain = ret.terrain and wml.get_child(ret.terrain, "flat") or nil
-	ret.stats.defense_adjust = num_or(item.terrain_recoup) - num_or(flat_terrain and flat_terrain.defense)
+	ret.adjust.defense = num_or(item.terrain_recoup) - num_or(flat_terrain and flat_terrain.defense)
 
 	if ret.arch_cat == "weapon" then
 		ret.icon = "attacks/" .. item.icon
@@ -109,8 +109,16 @@ local function eval_equipment(unit)
 		{"leg_armor",	armor,		"legs"},
 		{"shield",		armor,		"shield"}
 	}
-	local result = {}
-	local i
+-- 	local result = {
+-- 		{"total", {
+-- 			magic_adjust	= 0,
+-- 			ranged_adjust	= 0,
+-- 			evade_adjust	= 0,
+-- 			defense_adjust	= 0
+-- 		}}
+-- 	}
+	local adjust = {}
+	local i, k, v
 
 -- 	if not (equipment_slots and weapons and armor) then
 -- 		return nil
@@ -124,24 +132,17 @@ local function eval_equipment(unit)
 		else
 			local item = wml.get_nth_child(slot[2], slot[3], tonumber(idx) + 1)
 			if not item then
-				std_print("why not" .. slot[3] .. "?\n" .. dump_wml_value(slot[2]))
+-- 				std_print("why not" .. slot[3] .. "?\n" .. dump_wml_value(slot[2]))
 			else
 				local info = eval_item(item)
-				local row = {
-					magic_adjust	= info.stats.magic_adjust,
-					ranged_adjust	= info.stats.ranged_adjust,
-					evade_adjust	= info.stats.evade_adjust,
-					defense_adjust	= info.stats.defense_adjust,
-					arch_cat		= info.arch_cat,
-					categories		= info.cat
-				}
-				table.insert(row, {"resistance", info.resistance})
-				table.insert(result, {slot[1], row})
+				for k, v in pairs(info.adjust) do
+					adjust[k] = num_or(adjust[k]) + v
+				end
 			end
 		end
 	end
-	std_print(dump_lua_value(result, "eval_equipment"))
-	return result
+	std_print(dump_lua_value(adjust, "eval_equipment"))
+	return adjust
 end
 
 
@@ -3230,13 +3231,13 @@ local function constructUnit(var, unstore)
 -- 	end
 
 	local unit_id = wml.variables[var .. ".id"]
-	local stats = eval_equipment(unparsed_unit)
+	local adjust = eval_equipment(unparsed_unit)
 	local unit_variables = wml.get_child(unparsed_unit, "variables")
 
 	std_print(dump_lua_value(unparsed_unit.name, "unit_ref.name"))
-	std_print(dump_lua_value(stats, "stats"))
-	wml.remove_child(unit_variables, "stats")
-	table.insert(unit_variables, {"stats", stats})
+	std_print(dump_lua_value(adjust, "adjust"))
+	wml.remove_child(unit_variables, "adjust")
+	table.insert(unit_variables, {"adjust", adjust})
 
 	wml.variables[var] = unparsed_unit
 	if unstore then
