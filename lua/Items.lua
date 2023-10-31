@@ -2522,7 +2522,7 @@ function wesnoth.wml_actions.describe_item(cfg)
 				desc = desc .. (delimit and ", " or "") .. stat .. stats[i][1]
 				delimit = true
 			end
-			if i == 6 then
+			if i == 6 and delimit then
 				needcr = true
 			end
 		end
