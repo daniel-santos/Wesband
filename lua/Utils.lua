@@ -352,3 +352,16 @@ end
 --
 --
 -- end
+
+-- returns true if we should auto-upgrade this NPC, false to leave the talnet points unspent
+function wesnoth.wml_conditionals.do_npc_upgrade(cfg)
+    local id = cfg.id or wml.error("[do_npc_upgrade] tag requires 'id' attribute")
+--     std_print(dump_wml_value(wesnoth.sides.get(wesnoth.units.get(43,36).side).controller))
+    local upgrade_npcs = wml.variables["opts.upgrade_npcs"]
+    local unit = wesnoth.units.get(id)
+    std_print(dump_wml_value({upgrade_npcs = upgrade_npcs, id = id, unit_side = unit and unit.side or nil}, "do_npc_upgrade"))
+
+    if not unit then return true end
+    std_print(dump_wml_value(upgrade_npcs, "upgrade_npcs"))
+    return wesnoth.sides.get(unit.side).controller == "ai" or (not upgrade_npcs)
+end

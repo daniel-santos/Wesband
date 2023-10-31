@@ -45,7 +45,7 @@ function eval_item(item)
 			defense	= 0
 		}
 	}
-	std_print(dump_lua_value({resist = ret.resistance, item = item}, "wtf_" .. item.name))
+-- 	std_print(dump_lua_value({resist = ret.resistance, item = item}, "wtf_" .. item.name))
 	local i, j
 	for i, j in pairs(magic_types) do
 		local property_name = j .. "_magic_adjust"
@@ -92,7 +92,7 @@ function eval_item(item)
 		ret.icon = "attacks/" .. item.icon
 	end
 
-	std_print(dump_lua_value(ret, "item_info"))
+-- 	std_print(dump_lua_value(ret, "item_info"))
 
 	return ret
 end
