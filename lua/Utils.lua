@@ -335,3 +335,16 @@ function noarr_lua_table2wml(t)
 
 	return wml
 end
+
+-- returns true if we should auto-upgrade this NPC, false to leave the talnet points unspent
+function wesnoth.wml_conditionals.do_npc_upgrade(cfg)
+    local id = cfg.id or wml.error("[do_npc_upgrade] tag requires 'id' attribute")
+--     std_print(dump_wml_value(wesnoth.sides.get(wesnoth.units.get(43,36).side).controller))
+    local upgrade_npcs = wml.variables["opts.upgrade_npcs"]
+    local unit = wesnoth.units.get(id)
+
+    if not unit then return true end
+    local result = wesnoth.sides.get(unit.side).controller == "ai" or (not upgrade_npcs)
+    std_print(dump_wml_value({upgrade_npcs = upgrade_npcs, id = id, unit_side = unit and unit.side or nil, result=result}, "do_npc_upgrade"))
+    return result
+end
