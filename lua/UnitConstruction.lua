@@ -2014,7 +2014,7 @@ local function constructUnit(var, unstore)
 					} }
 				} })
 			end
-			if (get_n(weapon, "special_type.vine_slows") > 0 and get_n(unit, "abilities.vine_slows") > 0) or ((not player) and attack.user_name == "kusarigama" and attack.range == "ranged" and get_n(unit, "abilities.kusarigama_slows") > 0) then
+			if (get_n(weapon, "special_type.vine_slows") > 0 and get_n(unit, "abilities.vine_slows") > 0) or ((not player) and attack.user_name == "kusarigama" and attack.range == "ranged" and get_n(unit, "abilities.kusarigama_slows") > 0 or get_n(weapon, "enchantments.slows") > 0) then
 				table.insert(specials, { "slow", {
 					id = "slow",
 					name = "slows",
@@ -2365,6 +2365,24 @@ local function constructUnit(var, unstore)
 				set_p(fire_shot, "special_type.fire_shot_xbow", 0)
 				add_attack(fire_shot)
 			end
+			special_level = get_n(weapon, "enchantments.add_chance_to_hit")
+			if (special_level > 0) then
+				table.insert(specials, { "chance_to_hit", {
+					id = "ench_chance_to_hit",
+					name = "accurate",
+					description = string.format("This enchanted weapon has a %d%% greater chance to hit", special_level),
+					add = special_level,
+					cumulative = "yes"
+				} })
+			end
+			if (get_n(weapon, "enchantments.firststrike") > 0) then
+				table.insert(specials, { "firststrike", {
+					id = "ench_firststrike",
+					name = "firststrike",
+					description = "This enchanted weapon will react to any attacker, always striking first regardless of the oaf who wields it."
+				} })
+			end
+
 		end
 	end
 
