@@ -1033,6 +1033,38 @@ magic_types = {
 	"spirit"
 }
 
+function dump_weapon_table()
+	local t = {}
+
+	local i, j
+	local s = ""
+	std_print(dump_lua_value(t, "weapons"))
+	std_print(dump_lua_value(fields, "fields"))
+	for i = 1, 4 do
+		s = s .. "alias" .. tostring(i) .. "\t"
+	end
+	for i = 1, #fields do
+		s = s .. fields[i] .. "\t"
+	end
+	for i = 1, #specials do
+		s = s .. specials[i] .. "\t"
+	end
+	std_print(s)
+	for i = 1, #t do
+		s = ""
+		for j = 1, 4 do
+			s = s .. (t[i].names[j] or "") .. "\t"
+		end
+		for j = 1, #fields do
+			s = s .. (t[i][fields[j]] or "") .. "\t"
+		end
+		for j = 1, #specials do
+			s = s .. (t[i].special_type and t[i].special_type[specials[j]] or "") .. "\t"
+		end
+		std_print(s)
+	end
+end
+
 local function lappend(l, st)
 	local res = ""
 	if #st > 0 then
