@@ -1,3 +1,151 @@
+local magic_types = {
+	"dark",
+	"devling",
+	"faerie",
+	"green",
+	"have",
+	"human",
+	"minotaur",
+	"runic",
+	"swamp",
+	"tribal",
+	"troll",
+	"warlock",
+	"witch",
+	"wood"
+}
+
+local function num_or(value, default)
+	return value and tonumber(value) or (default and tonumber(default) or 0)
+end
+
+function eval_item(item)
+	if not item then
+		return {}
+	end
+
+	local ench = wml.get_child(item, "enchantments")
+	local ret = {
+		item		= item,
+		ench		= ench,
+		ench_stats	= ench and wml.get_child(ench, "stats") or nil,
+		cat			= item.category or "(category missing)", -- can this ever happen now? TODO: emit a warning?
+		desc		= item.description or item.name or "(description missing)",
+		name		= item.name,
+		icon		= item.icon,
+		arch_cat	= nil,
+		slot		= nil,
+		terrain		= wml.get_child(item, "terrain"),
+		resistance	= wml.get_child(item, "resistance") or {},
+		magic_bonus = 0,
+		adjust		= {
+			magic	= num_or(item.magic_adjust),
+			ranged	= num_or(item.ranged_adjust),
+			evade	= num_or(item.evade_adjust),
+			defense	= 0
+		}
+	}
+-- 	std_print(dump_lua_value({resist = ret.resistance, item = item}, "wtf_" .. item.name))
+	local i, j
+	for i, j in pairs(magic_types) do
+		local property_name = j .. "_magic_adjust"
+		local value = num_or(item[property_name])
+		ret.magic_bonus = ret.magic_bonus + value
+		if value > 0 then
+			ret.magic_type = j
+		end
+	end
+
+	if ret.cat == "(category missing)" then
+		if item.range == "melee" then
+			ret.cat = "melee_weapon"
+		elseif item.range == "ranged" then
+			ret.cat = "ranged_weapon"
+		elseif name == "clothes" or icon == "armor/tunic" then
+			ret.cat = "torso_armor"
+		elseif name == "pants_shoes" or name == "loincloth" or icon == "armor/shoes" then
+			ret.cat = "legs_armor"
+		elseif icon == "armor/head" or icon == "armor/elf-head" or icon == "armor/troll-head" then
+			ret.cat = "head_armor"
+		elseif icon == "categories/armor-arms" then
+			ret.cat = "shield"
+		else
+			std_print(dump_value(wml_item, "bad_item", "", "  ", 24) .. "\n")
+			H.wml_error("category missing and could not determine from other properties")
+		end
+	end
+-- 	std_print(wml.tostring(item))
+-- 	std_print(dump_value(item, "item", "", "  ", 24) .. "\n<small><small>")
+
+	if ret.cat == "shield" then
+		ret.arch_cat	= "armor"
+		ret.slot		= "shield"
+	else
+		ret.arch_cat	= ret.cat:split("_")[2]
+		ret.slot		= ret.cat:split("_")[1]
+	end
+
+	local flat_terrain = ret.terrain and wml.get_child(ret.terrain, "flat") or nil
+	ret.adjust.defense = num_or(item.terrain_recoup) - num_or(flat_terrain and flat_terrain.defense)
+
+	if ret.arch_cat == "weapon" then
+		ret.icon = "attacks/" .. item.icon
+	end
+
+-- 	std_print(dump_lua_value(ret, "item_info"))
+
+	return ret
+end
+
+local function eval_equipment(unit)
+	local variables = unit.variables or wml.get_child(unit, "variables") or nil
+	if not variables then return {} end
+	local equipment_slots	= wml.get_child(variables, "equipment_slots")
+	local inventory			= wml.get_child(variables, "inventory")
+	local weapons			= inventory and wml.get_child(inventory, "weapons") or nil
+	local armor				= inventory and wml.get_child(inventory, "armor") or nil
+	local slots = {
+		{"melee_1",		weapons,	"melee"},
+		{"melee_2",		weapons,	"melee"},
+		{"melee_3",		weapons,	"melee"},
+		{"ranged",		weapons,	"ranged"},
+		{"torso_armor",	armor,		"torso"},
+		{"head_armor",	armor,		"head"},
+		{"leg_armor",	armor,		"legs"},
+		{"shield",		armor,		"shield"}
+	}
+
+	local adjust = {}
+	local i, k, v
+
+	for i = 1, #slots do
+		local slot = slots[i]
+		local idx = num_or(equipment_slots[slot[1]])
+		if idx == 0 and (slot[1] == "melee_2" or slot[1] == "melee_3") then
+			-- skip melee_2 and melee_3 if nothing wielded. This could possibly
+			-- be incorrect if stats were different on some races.
+		else
+			local item = wml.get_nth_child(slot[2], slot[3], tonumber(idx) + 1)
+			if not item then
+-- 				std_print("why not" .. slot[3] .. "?\n" .. dump_wml_value(slot[2]))
+			else
+				local info = eval_item(item)
+				if slot[1] == "melee_1" then
+					adjust.melee1_name = item.name
+					adjust.melee1_user_name = item.name
+					adjust.magic_type = info.magic_type
+				end
+				for k, v in pairs(info.adjust) do
+					adjust[k] = num_or(adjust[k]) + v
+				end
+			end
+		end
+	end
+-- 	std_print(dump_lua_value(adjust, "eval_equipment"))
+	return adjust
+end
+
+
 
 local function dcp(parsed, aflag)
 	local clone
@@ -369,9 +517,204 @@ local function get_attack_basics(unit, equipment, weapon)
 	end
 	return attack, weapon_class
 end
+
+function child(obj, ...)
+	local k, v
+	local ret = obj
+	for k, v in ipairs(table.pack(...)) do
+		if not ret then return nil end
+		ret = ret[v] or wml.get_child(ret, v) or nil
+	end
+	return ret
+end
+
+function nchild(obj, ...)
+	local ret = child(obj, ...)
+	return ret and tonumber(ret) or 0
+end
+
+function get_attack_basics_light(unit, weapon)
+	-- use both a wml or a unit
+-- 	local unit_variables = unit and unit.variables or wml.get_child(unit, "variables")
+	local unit_variables = child(unit, "variables")
+	if not unit_variables then return {} end
+	local res = {
+		damage		= 1,
+		number		= 0,
+		description	= weapon.description,
+		name		= weapon.name,
+		user_name	= weapon.user_name,
+		type		= weapon.type,
+		icon		= string.format("attacks/%s.png", weapon.icon),
+		range		= weapon.range,
+		material	= weapon.material,
+		prereq		= wml.get_child(weapon, "prereq")
+	}
+	local percent_mult = 1.0
+	local var_abilities = child(unit_variables, "abilities")
+	local magic_casting = child(var_abilities, "magic_casting")
+	local adjust = child(unit_variables, "adjust")
+	local weapon_special_type = child(weapon, "special_type")
+	if weapon.class == "magical" or weapon.class == "spell" then
+		res.damage = nchild(magic_casting, "power") * num_or(weapon.spell_power, 1)
+		res.number = nchild(magic_casting, "speed")
+
+-- 		local spell_bonus_type = weapon.bonus_type
+		local armor_penalty = num_or(adjust.magic)
+		if weapon.runic_magic_adjust and armor_penalty < 0 then
+			armor_penalty = armor_penalty * 0.5
+		end
+		if (weapon.runic_magic_adjust and adjust.melee1_user_name == "hammer") or
+		   (weapon.name == "faerie fire" and adjust.melee1_name == "sword") then
+			armor_penalty = math.min(0, armor_penalty + 3 * magic_casting.focus)
+		end
+		percent_mult = math.max(0, 100 + adjust.magic_bonus + armor_penalty) / 100
+	else
+		local weapon_skills = child(unit_variables, "weapon_skills")
+		local skill = child(weapon_skills, weapon.class)
+		if weapon.number < 2 then
+			res.damage = 2
+		end
+		res.damage = res.damage * num_or(skill and skill.damage or nil, 1)
+		res.number = num_or(skill and skill.attack or nil, 0)
+
+		if res.range == "ranged" then
+			percent_mult = math.max(0, 100 + adjust.ranged) / 100
+		end
+	end
+	local function add_stat_adjusts(stat)
+		local stat_level = nchild(unit_variables, stat)
+		res.damage = res.damage + num_or(weapon[stat .. "_damage_rate"]) * stat_level / 100
+		res.number = res.number + num_or(weapon[stat .. "_number_rate"]) * stat_level / 100
+		local prereq = res.prereq and res.prereq[stat] or 0
+		if prereq > stat_level then
+			percent_mult = percent_mult * stat_level / prereq
+		end
+	end
+	add_stat_adjusts("body")
+	add_stat_adjusts("deft")
+	add_stat_adjusts("mind")
+
+	if unit.race == "elf" then
+--                [weapon_skills]
+--                    [race_adjust]
+--                        [class]
+--                            [bow]
+--                                number_hard=1
+--                            [/bow]
+--                        [/class]
+--                    [/race_adjust]
+--                [/weapon_skills]
+		if weapon.class == "bow" then
+			res.number = res.number + 1
+		end
+	elseif unit.race == "dwarf" then
+--                [weapon_skills]
+--                    [race_adjust]
+--                        [user_name]
+--                            [axe]
+--                                number_hard=1
+--                                damage_percent=-20
+--                            [/axe]
+--                            [hammer]
+--                                damage_percent=20
+--                            [/hammer]
+--                        [/user_name]
+--                    [/race_adjust]
+--                [/weapon_skills]
+		if weapon.user_name == "axe" then
+			res.number = res.number + 1
+			percent_mult = percent_mult * 0.8
+		elseif weapon.user_name == "hammer" then
+			percent_mult = percent_mult * 1.2
+		end
+	elseif unit.race == "troll" then
+--                [weapon_skills]
+--                    [race_adjust]
+--                        [class]
+--                            [light_blade]
+--                                damage_percent=-25
+--                            [/light_blade]
+--                            [heavy_blade]
+--                                damage_percent=-25
+--                            [/heavy_blade]
+--                            [polearm]
+--                                damage_percent=-25
+--                            [/polearm]
+--                            [thrown_light_blade]
+--                                damage_percent=-25
+--                            [/thrown_light_blade]
+--                            [thrown_heavy_blade]
+--                                damage_percent=-25
+--                            [/thrown_heavy_blade]
+--                            [bow]
+--                                damage_percent=-25
+--                            [/bow]
+--                            [javelin]
+--                                damage_percent=-25
+--                            [/javelin]
+--                            [crossbow]
+--                                damage_percent=-25
+--                            [/crossbow]
+--                            [none]
+--                                damage_percent=-25
+--                            [/none]
+--                        [/class]
+--                    [/race_adjust]
+--                [/weapon_skills]
+		if weapon.class ~= "bludgeon" and weapon.class ~= "lob" then
+			percent_mult = percent_mult * 0.75
+		end
+	elseif unit.race == "lizard" then
+--                [weapon_skills]
+--                    [race_adjust]
+--                        [class]
+--                            [polearm]
+--                                number_hard=1
+--                                damage_percent=-20
+--                            [/polearm]
+--                            [javelin]
+--                                number_hard=1
+--                                damage_percent=-20
+--                            [/javelin]
+--                        [/class]
+--                    [/race_adjust]
+--                [/weapon_skills]
+		if weapon.class == "polearm" or weapon.class == "javelin" then
+			res.number = res.number + 1
+			percent_mult = percent_mult * 0.8
+		end
+	end
+	res.damage = math.max(1, math.floor(percent_mult * (weapon.damage + res.damage)))
+	res.number = math.floor(weapon.number + res.number)
+	local target_level = var_abilities and num_or(var_abilities.target) or 0
+	if target_level > 0 and nchild(weapon_special_type, "backstab") > 0 then
+		res.damage = math.ceil(res.damage * 0.5 * (3 + target_level))
+		res.number = math.ceil(res.number * 0.5)
+	end
+	if var_abilities and num_or(var_abilities.witch_magic) >= 4 then
+		res.damage = math.floor(res.damage * 1.5 + 0.5)
+	end
+	if weapon.class == "light_blade" and
+			nchild(var_abilities, "witchcraft") == 1 and
+			nchild(magic_casting, "power") > 0 then
+		res.number = math.ceil(res.number * 0.5)
+	end
+	if res.user_name == "hammer" and var_abilities and nchild(var_abilities, "devling_spiker") > 0 then
+		res.description = "nail 'em"
+		res.damage = math.round(res.damage * res.number)
+		res.number = 1
+	end
+	if res.user_name == "spike 'em" then
+		res.damage = math.round(res.damage * res.number * 1.25)
+		res.number = 1
+	end
+	return res, weapon.class
+end
+
 function wesnoth.wml_actions.calculate_weapon_display(args)
 	local unit_var = args.unit_variable or H.wml_error("[calculate_weapon_display] requires a unit_variable= key")
-	local weapon_var = args.weapon_variable or H.wml_error("[calculate_weapon_display] requires a unit_variable= key")
+	local weapon_var = args.weapon_variable or H.wml_error("[calculate_weapon_display] requires a weapon_variable= key")
 	local unit = parse_container(wml.variables[unit_var])
 	local equipment = get_unit_equipment(unit)
 	local weapon = parse_container(wml.variables[weapon_var])
@@ -2798,7 +3141,17 @@ local function constructUnit(var, unstore)
 	set_p(unit, "upkeep", 0)
 	set_p(unit, "variables.dont_make_me_quick", "yes")
 	set_p(unit, "status.construct_unit", "yes")
-	wml.variables[var] = unparse_container(unit)
+	local unparsed_unit = unparse_container(unit)
+
+	-- Calculate and cache *_adjust stats
+	local adjust = eval_equipment(unparsed_unit)
+	local unit_variables = wml.get_child(unparsed_unit, "variables")
+-- 	std_print(dump_lua_value(unparsed_unit.name, "unit_ref.name"))
+-- 	std_print(dump_lua_value(adjust, "adjust"))
+	wml.remove_child(unit_variables, "adjust")
+	table.insert(unit_variables, {"adjust", adjust})
+
+	wml.variables[var] = unparsed_unit
 	if unstore then
 		W.unstore_unit { variable = var }
 -- 		local unit_x, unit_y = get_p(unit, "x"), get_p(unit, "y")
