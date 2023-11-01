@@ -1092,8 +1092,9 @@ local function cappend(st1, st2)
 end
 
 function adjustWeaponDescription(wt)
-	if wt.evade_adjust and wt.evade_adjust < 0 then
-		wt.evade_description = string.format(", Evade Adjust: %d", wt.evade_adjust)
+-- 	local ench = wt.enchantments and wt.enchantments[1] or nil
+	if wt.evade_adjust and wt.evade_adjust ~= 0 then
+		wt.evade_description = string.format(", Evade Adjust: %s%d", (wt.evade_adjust > 0 and "+" or ""), wt.evade_adjust)
 	end
 	local st1, st2, st3 = "", "", ""
 	if wt.class == "thunderstick" then
@@ -2183,5 +2184,341 @@ function wesnoth.wml_actions.item_cleanup(cfg)
 		if g and not g[1] then
 			wml.variables[string.format("ground.x%d", x)] = nil
 		end
+	end
+end
+
+local function ench_stat(ench, stat)
+	if ench then
+		return "<span color='#11d116'>" .. stat .."</span>"
+	else
+		return stat
+	end
+end
+
+local function array_contains(arr, val)
+	local i
+	for i = 1, #arr do
+		if arr[i] == val then
+			return true
+		end
+	end
+	return false
+end
+
+-- [describe_item]
+--     item - name of the variable containing the item
+--     dest - name a variable to store the result in
+--     unit - for weapons, calculate adjusted damage/strikes for unit
+--     mode - either "replace" or "append", as with [set_variables], but does
+--            not support insert or merge. Default value is "replace".
+-- [/describe_item]
+-- TODO: call eval_item() now instaed of looking up the information ourselves?
+function wesnoth.wml_actions.describe_item(cfg)
+	local item_var = cfg.item or H.wml_error("[describe_item] requires an item= key")
+	local dest  = cfg.dest or H.wml_error("[describe_item] requires a dest= key")
+	local unit_var = cfg.unit
+	local mode = cfg.mode or "replace"
+	local wml_item = wesnoth.get_variable(item_var) or H.wml_error("cannot find variable " .. item_var)
+	local item = wml2lua_table(wml_item)
+-- 	local ench = wesnoth.get_variable(item_var .. ".enchantments")
+	local ench = item.enchantments and item.enchantments[1]
+	local ench_stats = ench and item.enchantments[1].stats and item.enchantments[1].stats[1] or nil --  wesnoth.get_variable(item_var .. ".enchantments.stats")
+	local cat  = item.category or "(category missing)" -- this is the case for some items (undroppable only?)
+	local desc = item.description or item.name or "(description missing)"
+	local name = item.name
+	local icon = item.icon
+	local arch_cat, slot
+	local i, j
+	local tranditional_stats = wesnoth.get_variable("opts.trad_stats")
+	if tranditional_stats == nil then tranditional_stats = true end
+
+	desc = ench_stat(ench and ench.power > 0, desc)
+
+	if cat == "(category missing)" then
+		if item.range == "melee" then
+			cat = "melee_weapon"
+		elseif item.range == "ranged" then
+			cat = "ranged_weapon"
+		elseif name == "clothes" or icon == "armor/tunic" then
+			cat = "torso_armor"
+		elseif name == "pants_shoes" or name == "loincloth" or icon == "armor/shoes" then
+			cat = "legs_armor"
+		elseif icon == "armor/head" or icon == "armor/elf-head" or icon == "armor/troll-head" then
+			cat = "head_armor"
+		elseif icon == "categories/armor-arms" then
+			cat = "shield"
+		else
+			std_print(dump_value(wml_item, "bad_item", "", "  ", 24) .. "\n")
+			H.wml_error("category missing and could not determine from other properties")
+		end
+	end
+-- 	std_print(wml.tostring(item))
+-- 	std_print(dump_value(item, "item", "", "  ", 24) .. "\n<small><small>")
+
+	if cat == "shield" then
+		arch_cat = "armor"
+		slot     = "shield"
+	else
+		arch_cat = cat:split("_")[2]
+		slot     = cat:split("_")[1]
+	end
+
+	local futile = {
+		arcane	= 0,
+		blade	= 0,
+		fire	= 0,
+		cold	= 0,
+		impact	= 0,
+		pierce	= 0
+	}
+
+	local defense_adjust = item.terrain and item.terrain[1].flat and item.terrain[1].flat[1].defense or 0
+-- 	local resistance = wesnoth.get_variable(item_var .. ".resistance") or futile
+	local resistance = item.resistance and item.resistance[1] or futile
+
+-- 	local function ench_stat(stat_name, stat)
+-- 		stat = stat or item[stat_name]
+-- 		if ench and ench[stat_name] and ench[stat_name] ~= 0 and ench[stat_name] ~= "" then
+-- 			return "<span foreground='#11d116'>" .. stat .."</span>"
+-- 		else
+-- 			return stat
+-- 		end
+-- 	end
+
+	local function item_ench_stat(stat_name, stat)
+		stat = stat or item[stat_name]
+		if ench_stats then
+			local ench_val = ench_stats[stat_name]
+			if ench_val and not (ench_val == 0 or ench_val == "") then
+				return ench_stat(true, stat)
+			end
+		end
+		return tostring(stat)
+	end
+
+	if arch_cat == "weapon" then
+		icon = "attacks/" .. item.icon
+		local adjusted = ""
+
+-- 		if unit_var then
+-- 			local unit = parse_container(wml.variables[unit_var]) or
+-- 						 H.wml_error("[describe_item] can't find unit " .. unit_var)
+-- 			local attack = get_attack_basics(unit, get_unit_equipment(unit), parse_container(wml_item))
+-- 			adjusted = string.format(", Adjusted: (%d-%d)", attack.damage, attack.number)
+-- 		end
+		if unit_var then
+			local unit = wesnoth.units.get(wml.variables[unit_var .. ".id"]) or wml.variables[unit_var] or
+						 H.wml_error("[describe_item] can't find unit " .. unit_var)
+			local attack = get_attack_basics_light(unit, wml_item)
+			adjusted = string.format(", Adjusted: (%d-%d)", attack.damage, attack.number)
+		end
+
+		local specials = ""
+		if ench_stats then
+			local i
+			local ignore = {
+				"arcane", "cold", "fire", "damage", "number"
+			}
+			local delim = false
+			for k, v in pairs(ench_stats) do
+				if not array_contains(ignore, k) then
+					local str = k
+					if str == "chance_to_hit" then
+						str = "+" .. tostring(v) .. " to hit"
+					elseif v ~= 1 then
+						str = "+" .. tostring(v) .. " " .. str
+					end
+					specials = specials .. (delim and ", " or "") .. ench_stat(true, str)
+					delim = true
+				end
+			end
+		end
+
+		local level_rank = ""
+		if item.rank then
+			-- we don't save these for undroppable
+			level_rank = string.format("(%s/%s)", item.rank, item.level)
+		end
+
+		desc = string.format(
+			"%s <small><small>%s\n" ..
+			"Class: %s%s</small>\n" ..
+			"Base: (%s-%s)%s %s\n" ..
+			"<small>%s%s%s</small></small>",
+			desc, level_rank,
+			item.class_description, (item.evade_description or ""),
+			item_ench_stat("damage"), item_ench_stat("number"),
+			adjusted, ench_stat(ench and ench.branded, item.type),
+			specials, (specials ~= "" and item.special ~= "" and ", " or ""), item.special
+		)
+
+
+	elseif arch_cat == "armor" then
+		desc = desc .. "<small><small>\n"
+
+-- 		std_print(dump_value(cfg, "describe_item"))
+-- 		std_print(dump_value(resistance, "item.resistance", "", "  ", 24) .. "\n")
+-- 		std_print(dump_value(resistance.blade, "item.resistance.blade", "", "  ", 24) .. "\n")
+
+		-- text - translatable text
+		-- name - common variable name
+		-- val_cont - the value or a container that has it by name
+		local function gen(text, name, val_cont)
+			local value
+			if val_cont == nil then
+				value = 0
+			elseif type(val_cont) == "table" then
+				value = val_cont[name] or 0
+				if type(value) == "table" then
+					std_print("\n" .. dump_lua_value({name, val_cont, value}, "whoops"))
+					H.wml_error("whoops")
+				end
+			else
+				value = tonumber(val_cont) or 0
+			end
+
+			return {
+				text,
+				value,
+				ench_stats and ench_stats[name] or 0,
+				name
+			}
+		end
+
+-- 		local flat_terrain = item.terrain and item.terrain[1].flat and item.terrain[1].flat[1] or nil
+		local defense_adjust = item.terrain and item.terrain[1].flat and
+			  item.terrain[1].flat[1] and -item.terrain[1].flat[1].defense or 0
+		local stats = {
+			gen(_"arcane",		"arcane",			resistance),
+			gen(_"blade",		"blade",			resistance),
+			gen(_"fire",		"fire",				resistance),
+			gen(_"cold",		"cold",				resistance),
+			gen(_"impact",		"impact",			resistance),
+			gen(_"pierce",		"pierce",			resistance),
+			gen(_"magic adj",	"magic_adjust",		item),
+			gen(_"ranged adj",	"ranged_adjust",	item),
+			gen(_"evade adj",	"evade_adjust",		item),
+			gen(_"def adj",		"defense_adjust",	defense_adjust + (item.terrain_recoup or 0))
+-- 			gen(_"def adj",		"terrain_recoup",	item)
+		}
+
+		-- Encoding of what is tranditionally displayed for each item type,
+		-- matching what an item can have by default. Since item enchantment,
+		-- however, this can be changed now. Still we'll only a stat for an
+		-- armor slot that's non-tranditional if it's been magically modified.
+		local nomrally_show_stat = {
+			-- Slot		show	show	show	show	show	show
+			--			res		magic	ranged	evade	defense	terrain
+			--					adjust	adjust	adjust	adjust	recoup
+			melee	 = {0,		0,		0,		1,		0,		0},
+			ranged	 = {0,		0,		0,		0,		0,		0},
+			shield	 = {0,		1,		1,		1,		0,		1},
+			head	 = {1,		0,		1,		1,		0,		0},
+			torso	 = {1,		1,		0,		1,		1,		0},
+			legs	 = {1,		1,		0,		1,		1,		0},
+		}
+
+-- 		-- Convert to boolean
+-- 		for k, v in pairs(nomrally_show_stat) do
+-- 			for i = 1, #nomrally_show_stat[k] do
+-- 				nomrally_show_stat[k][i] = nomrally_show_stat[k][i] == 1
+-- 			end
+-- 		end
+-- 		local traditional_order = {
+-- 			-- Slot		magic	ranged	evade	defense	terrain
+-- 			--			adjust	adjust	adjust	adjust	recoup
+-- 			shield	 = {1,		1,		1,		0,		1},
+-- 			head	 = {0,		1,		1,		0,		0},
+-- 			torso	 = {1,		0,		1,		1,		0},
+-- 			legs	 = {1,		0,		1,		1,		0},
+-- 		}
+-- 		if slot == "torso" then
+-- 			std_print("\n" .. dump_lua_value({
+-- 				item_var		= item_var,
+-- 				cat				= cat,
+-- 				arch_cat		= arch_cat,
+-- 				slot			= slot,
+-- 				nomrally_show	= nomrally_show_stat[slot],
+-- 				item			= item,
+-- 				stats			= stats,
+-- 				tests = {
+-- 					type(item.terrain),
+-- 					item.terrain or "no",
+-- 					type(item.terrain[1]),
+-- 					item.terrain[1] or "no",
+-- 					item.terrain[1] and item.terrain[1].flat or "no",
+-- 					item.terrain and item.terrain[1].flat and item.terrain[1].flat[1].defense or "no"
+-- 				}
+-- 			}, "debug_stuff") .. "\n")
+-- 		end
+
+-- 		local fuck =
+		local delimit = false
+		local needcr = false
+		for i = 1, #stats do
+			-- We lump all resistances together into stat category 1
+			local stat_cat = i < 7 and 1 or i - 5
+			local normally_show = nomrally_show_stat[slot][stat_cat] > 0 and tranditional_stats
+			local have_stat = stats[i][2] and stats[i][2] ~= 0
+			local show = normally_show or have_stat
+
+			if slot == "torso" then
+-- 				std_print(dump_lua_value({
+-- 					stat			= i,
+-- 					slot			= slot,
+-- 					stat_cat		= stat_cat,
+-- 					stat_name		= tostring(stats[i][1]),
+-- 					show_from_table = nomrally_show_stat[slot][stat_cat],
+-- 					inverted		= not nomrally_show_stat[slot][stat_cat],
+-- 					table_again		= nomrally_show_stat[slot],
+-- 					normally_show	= normally_show,
+-- 					have_stat		= have_stat,
+-- 					show			= show,
+-- 					defense_adjust	= defense_adjust
+-- 				}, "stuff", "  "))
+			end
+
+			if show then
+				local stat
+				-- These stats are clasically either negative or zero, but this can change after
+				-- enchantment.
+				if have_stat then
+					stat = (i > 6 and stats[i][2] > 0 and "+" or "") .. tostring(stats[i][2]) .. "% "
+				else
+					stat = "0% "
+				end
+				-- If this stat was enchanted, then make it purdy
+				stat = ench_stat(stats[i][3] and stats[i][3] ~= 0, stat)
+				if needcr then
+					desc = desc .. "\n"
+					needcr = false
+					delimit = false
+				end
+				desc = desc .. (delimit and ", " or "") .. stat .. stats[i][1]
+				delimit = true
+			end
+			if i == 6 and delimit then
+				needcr = true
+			end
+		end
+		desc = desc .. "</small></small>"
+	else
+		-- For other items there _should_ be nothing else to do...
+	end
+	local result = wml.parsed(cfg)
+	result.item = nil
+	result.name = nil
+	result.mode = nil
+	result.image = icon .. ".png"
+	result.label = desc
+
+	if mode == "replace" then
+		wesnoth.set_variable(dest, result)
+	elseif mode == "append" then
+		local value = wml.array_access.get(dest) or {}
+		table.insert(value, result)
+		wml.array_access.set(dest, value)
+	else
+		H.wml_error("[describe_item] invalid mode; must be either 'replace' or 'append'")
 	end
 end
