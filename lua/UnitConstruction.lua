@@ -20,6 +20,7 @@ local function dcp(parsed, aflag)
 	end
 	return clone
 end
+
 local function get_p(parsed, relative)
 	local aflag, t, v = false, parsed
 	if type(relative) ~= "nil" then
@@ -60,11 +61,13 @@ local function get_p(parsed, relative)
 	end
 	return v or t
 end
+
 local function get_n(parsed, relative, num)
 	local n = tonumber(num) or 0
 	local p = get_p(parsed, relative)
 	return tonumber(p) or n
 end
+
 local function clear_p(parsed, relative)
 	if type(relative) ~= "nil" then
 		local p, n, np = string.match(relative, "^([%a%d_]+)%[(%d+)%]%.([%a%d%[%]%._]+)$")
@@ -105,6 +108,7 @@ local function clear_p(parsed, relative)
 	end
 	return parsed
 end
+
 local function set_p(parsed, relative, value, pflag)
 	if type(value) == "nil" then
 		clear_p(parsed, relative)
@@ -1392,15 +1396,15 @@ local function constructUnit(var, unstore)
 				name = "submerge",
 				female_name = "female^submerge",
 				description = "Submerge:\nThis unit can hide in deep water, and remain undetected by its enemies.\n\nEnemy units cannot see this unit while it is in deep water, except if they have units next to it. Any enemy unit that first discovers this unit immediately loses all its remaining movement.",
-			        name_inactive = "submerge",
-			        female_name_inactive = "female^submerge",
-			        description_inactive = "Submerge:\nThis unit can hide in deep water, and remain undetected by its enemies.\n\nEnemy units cannot see this unit while it is in deep water, except if they have units next to it. Any enemy unit that first discovers this unit immediately loses all its remaining movement.",
-					affect_self = "yes",
-					{ "filter_self", {
-						{ "filter_location", {
-							terrain = "Wo*^*"
-						} }
+				name_inactive = "submerge",
+				female_name_inactive = "female^submerge",
+				description_inactive = "Submerge:\nThis unit can hide in deep water, and remain undetected by its enemies.\n\nEnemy units cannot see this unit while it is in deep water, except if they have units next to it. Any enemy unit that first discovers this unit immediately loses all its remaining movement.",
+				affect_self = "yes",
+				{ "filter_self", {
+					{ "filter_location", {
+						terrain = "Wo*^*"
 					} }
+				} }
 			} })
 		end
 	end
@@ -2811,6 +2815,7 @@ local function constructUnit(var, unstore)
 -- 			} }
 -- 		}
 	end
+
 end
 function wesnoth.wml_actions.construct_unit(cfg)
 	local var = cfg.variable or H.wml_error("[construct_unit] requires a variable= key")

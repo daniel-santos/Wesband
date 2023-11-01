@@ -1100,6 +1100,7 @@ function adjustWeaponDescription(wt)
 	if wt.class == "thunderstick" then
 		st1 = "requires thunderstick tinker for upkeep and upgrade"
 	end
+
 	local sp = wml.get_child(wt, "special_type")
 	if sp then
 		if sp.throwable and sp.throwable == 1 then
