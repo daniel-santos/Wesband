@@ -2142,6 +2142,8 @@ function wesnoth.wml_actions.item_cleanup(cfg)
 	local x = cfg.x or H.wml_error("[item_cleanup] requires an x= key")
 	local y = cfg.y or H.wml_error("[item_cleanup] requires a y= key")
 	local ix = cfg.index
+	x = tonumber(x)
+	y = tonumber(y)
 	if type(ix) ~= "number" then
 		ix = -1
 	end
